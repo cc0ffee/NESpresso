@@ -1,5 +1,6 @@
-#include <iostream>
+#include "cpu.hpp"
 
 int main() {
-    std::cout << "NES CPU experiment\n";
+    CPU cpu;
+    cpu.reset();
 }

@@ -4,5 +4,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(nes
     src/main.cpp
+    src/cpu.cpp
 )
 target_include_directories(nes PRIVATE include)
