@@ -5,6 +5,7 @@
 class CPU {
 public:
     void reset();
+    std::uint8_t step();
     std::array<std::uint8_t, 65536> memory_{};
 private:
     std::uint8_t reg_a_{0};

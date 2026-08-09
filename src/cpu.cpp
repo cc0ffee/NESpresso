@@ -8,3 +8,16 @@ void CPU::reset() {
     pc_ = 0x8000;
     status_ = 0x24;
 }
+
+std::uint8_t CPU::step() {
+    const std::uint8_t opcode = memory_[pc_++];
+    switch (opcode) {
+        case 0xEA:
+            return 2;
+        case 0xA9:
+            reg_a_ = memory_[pc_++];
+            return 2;
+        default:
+            throw std::runtime_error("Unhandled opcode");
+    }
+}
