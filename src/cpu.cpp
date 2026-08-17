@@ -35,6 +35,18 @@ std::uint8_t CPU::step() {
             memory_[low | (high << 8)] = reg_a_;
             return 4;
         }
+        case 0xAA:
+            reg_x_ = reg_a_;
+            return 2;
+        case 0x8A:
+            reg_a_ = reg_x_;
+            return 2;
+        case 0xE8:
+            ++reg_x_;
+            return 2;
+        case 0xCA:
+            --reg_x_;
+            return 2;
         default:
             throw std::runtime_error("Unhandled opcode");
     }
