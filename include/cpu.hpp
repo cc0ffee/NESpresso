@@ -8,6 +8,7 @@ public:
     std::uint8_t step();
     std::array<std::uint8_t, 65536> memory_{};
 private:
+    void update_nz_flags(std::uint8_t val);
     std::uint8_t reg_a_{0};
     std::uint8_t reg_x_{0};
     std::uint8_t reg_y_{0};
