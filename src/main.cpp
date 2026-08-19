@@ -1,15 +1,15 @@
 #include "cpu.hpp"
+#include "cartridge.hpp"
+#include <fstream>
+#include <iostream>
 
-int main() {
-    Bus bus;
-    bus.cpu_memWrite(0xFFFC, 0);
-    bus.cpu_memWrite(0xFFFD, 0x80);
-    bus.cpu_memWrite(0x8000, 0xA9);
-    bus.cpu_memWrite(0x8001, 0x42);
-    bus.cpu_memWrite(0x8002, 0x85);
-    bus.cpu_memWrite(0x8003, 0x10);
+int main(int argc, char** argv) {
+    if (argc < 2) { std::cerr << "Usage: nes ROM\n"; return 1; }
+    std::ifstream rom_file(argv[1], std::ios::binary);
+    if (!rom_file) { std::cerr << "Could not open ROM\n"; return 1; }
+    Cartridge cartridge(rom_file);
+    Bus bus(cartridge);
     CPU cpu(bus);
     cpu.reset();
-    cpu.step(); cpu.step();
-    return bus.cpu_memRead(0x10) == 0x42 ? 0 : 1;
+    for (unsigned i = 0; i < 500000 && !cpu.cpu_halt_; ++i) { cpu.step(); }
 }
