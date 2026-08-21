@@ -193,6 +193,9 @@ void CPU::write_operand(AddressingMode mode, const AddressResult& operand, std::
 void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& operand, std::uint8_t& cycles) {
 
     switch (opcode) {
+        case Operation::ADC:
+            add_to_accumulator(read_operand(mode, operand));
+            break;
         case Operation::DEX:
             --reg_x_;
             update_nz_flags(reg_x_);
@@ -230,6 +233,9 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             }
             break;
         };
+        case Operation::SBC:
+            add_to_accumulator(read_operand(mode, operand) ^ 0xFF);
+            break;
         case Operation::STA:
             write_operand(mode, operand, reg_a_);
             break;

@@ -60,6 +60,14 @@ inline constexpr auto opcode_table = [] {
     };
 
     // ADC
+    set(0x69, "ADC", Operation::ADC, AddressingMode::Immediate, 2, 2);
+    set(0x65, "ADC", Operation::ADC, AddressingMode::ZeroPage, 2, 3);
+    set(0x75, "ADC", Operation::ADC, AddressingMode::ZeroPageX, 2, 4);
+    set(0x6D, "ADC", Operation::ADC, AddressingMode::Absolute, 3, 4);
+    set(0x7D, "ADC", Operation::ADC, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0x79, "ADC", Operation::ADC, AddressingMode::AbsoluteY, 3, 4, true);
+    set(0x61, "ADC", Operation::ADC, AddressingMode::IndexedIndirect, 2, 6);
+    set(0x71, "ADC", Operation::ADC, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // AND
 
@@ -138,6 +146,14 @@ inline constexpr auto opcode_table = [] {
     // Returns
 
     // SBC
+    set(0xE9, "SBC", Operation::SBC, AddressingMode::Immediate, 2, 2);
+    set(0xE5, "SBC", Operation::SBC, AddressingMode::ZeroPage, 2, 3);
+    set(0xF5, "SBC", Operation::SBC, AddressingMode::ZeroPageX, 2, 4);
+    set(0xED, "SBC", Operation::SBC, AddressingMode::Absolute, 3, 4);
+    set(0xFD, "SBC", Operation::SBC, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0xF9, "SBC", Operation::SBC, AddressingMode::AbsoluteY, 3, 4, true);
+    set(0xE1, "SBC", Operation::SBC, AddressingMode::IndexedIndirect, 2, 6);
+    set(0xF1, "SBC", Operation::SBC, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // Set flags
 
