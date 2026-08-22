@@ -92,12 +92,30 @@ inline constexpr auto opcode_table = [] {
     // Flag instructions
 
     // CMP
+    set(0xC9, "CMP", Operation::CMP, AddressingMode::Immediate, 2, 2);
+    set(0xC5, "CMP", Operation::CMP, AddressingMode::ZeroPage, 2, 3);
+    set(0xD5, "CMP", Operation::CMP, AddressingMode::ZeroPageX, 2, 4);
+    set(0xCD, "CMP", Operation::CMP, AddressingMode::Absolute, 3, 4);
+    set(0xDD, "CMP", Operation::CMP, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0xD9, "CMP", Operation::CMP, AddressingMode::AbsoluteY, 3, 4, true);
+    set(0xC1, "CMP", Operation::CMP, AddressingMode::IndexedIndirect,  2, 6);
+    set(0xD1, "CMP", Operation::CMP, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // CPX
+    set(0xE0, "CPX", Operation::CPX, AddressingMode::Immediate, 2, 2);
+    set(0xE4, "CPX", Operation::CPX, AddressingMode::ZeroPage, 2, 3);
+    set(0xEC, "CPX", Operation::CPX, AddressingMode::Absolute, 3, 4);
 
     // CPY
+    set(0xC0, "CPY", Operation::CPY, AddressingMode::Immediate, 2, 2);
+    set(0xC4, "CPY", Operation::CPY, AddressingMode::ZeroPage, 2, 3);
+    set(0xCC, "CPY", Operation::CPY, AddressingMode::Absolute, 3, 4);
 
     // DEC
+    set(0xC6, "DEC", Operation::DEC, AddressingMode::ZeroPage,  2, 5);
+    set(0xD6, "DEC", Operation::DEC, AddressingMode::ZeroPageX, 2, 6);
+    set(0xCE, "DEC", Operation::DEC, AddressingMode::Absolute, 3, 6);
+    set(0xDE, "DEC", Operation::DEC, AddressingMode::AbsoluteX, 3, 7);
 
     set(0xCA, "DEX", Operation::DEX, AddressingMode::Implied, 1, 2);
     set(0x88, "DEY", Operation::DEY, AddressingMode::Implied, 1, 2);
@@ -116,6 +134,10 @@ inline constexpr auto opcode_table = [] {
     set(0x02, "HLT", Operation::HLT, AddressingMode::Implied, 2, 2);
 
     // INC
+    set(0xE6, "INC", Operation::INC, AddressingMode::ZeroPage, 2, 5);
+    set(0xF6, "INC", Operation::INC, AddressingMode::ZeroPageX, 2, 6);
+    set(0xEE, "INC", Operation::INC, AddressingMode::Absolute, 3, 6);
+    set(0xFE, "INC", Operation::INC, AddressingMode::AbsoluteX, 3, 7);
 
     set(0xE8, "INX", Operation::INX, AddressingMode::Implied, 1, 2);
     set(0xC8, "INY", Operation::INY, AddressingMode::Implied, 1, 2);

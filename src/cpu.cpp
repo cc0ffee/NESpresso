@@ -207,6 +207,21 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             set_flag(Negative, (val & 0x80) != 0);
             break;
         }
+        case Operation::CMP:
+            compare_register(reg_a_, read_operand(mode, operand));
+            break;
+        case Operation::CPX:
+            compare_register(reg_x_, read_operand(mode, operand));
+            break;
+        case Operation::CPY:
+            compare_register(reg_y_, read_operand(mode, operand));
+            break;
+        case Operation::DEC: {
+            const std::uint8_t result = static_cast<std::uint8_t>(read_operand(mode, operand) - 1);
+            write_operand(mode , operand, result);
+            update_nz_flags(result);
+            break;
+        };
         case Operation::DEX:
             --reg_x_;
             update_nz_flags(reg_x_);
@@ -222,6 +237,12 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
         case Operation::HLT:
             cpu_halt_ = true;
             break;
+        case Operation::INC: {
+            const std::uint8_t result = static_cast<std::uint8_t>(read_operand(mode, operand) + 1);
+            write_operand(mode, operand, result);
+            update_nz_flags(result);
+            break;
+        }
         case Operation::INX:
             ++reg_x_;
             update_nz_flags(reg_x_);
