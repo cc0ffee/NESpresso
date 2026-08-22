@@ -196,6 +196,17 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
         case Operation::ADC:
             add_to_accumulator(read_operand(mode, operand));
             break;
+        case Operation::AND:
+            reg_a_ &= read_operand(mode, operand);
+            update_nz_flags(reg_a_);
+            break;
+        case Operation::BIT: {
+            const std::uint8_t val = read_operand(mode, operand);
+            set_flag(Zero, (reg_a_ & val) == 0);
+            set_flag(Overflow, (val & 0x40) != 0);
+            set_flag(Negative, (val & 0x80) != 0);
+            break;
+        }
         case Operation::DEX:
             --reg_x_;
             update_nz_flags(reg_x_);
@@ -203,6 +214,10 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
         case Operation::DEY:
             --reg_y_;
             update_nz_flags(reg_y_);
+            break;
+        case Operation::EOR:
+            reg_a_ ^= read_operand(mode, operand);
+            update_nz_flags(reg_a_);
             break;
         case Operation::HLT:
             cpu_halt_ = true;
@@ -233,6 +248,10 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             }
             break;
         };
+        case Operation::ORA:
+            reg_a_ |= read_operand(mode, operand);
+            update_nz_flags(reg_a_);
+            break;
         case Operation::SBC:
             add_to_accumulator(read_operand(mode, operand) ^ 0xFF);
             break;

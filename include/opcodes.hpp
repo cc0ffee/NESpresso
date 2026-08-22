@@ -70,12 +70,22 @@ inline constexpr auto opcode_table = [] {
     set(0x71, "ADC", Operation::ADC, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // AND
+    set(0x29, "AND", Operation::AND, AddressingMode::Immediate, 2, 2);
+    set(0x25, "AND", Operation::AND, AddressingMode::ZeroPage, 2, 3);
+    set(0x35, "AND", Operation::AND, AddressingMode::ZeroPageX, 2, 4);
+    set(0x2D, "AND", Operation::AND, AddressingMode::Absolute, 3, 4);
+    set(0x3D, "AND", Operation::AND, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0x39, "AND", Operation::AND, AddressingMode::AbsoluteY, 3, 4, true);
+    set(0x21, "AND", Operation::AND, AddressingMode::IndexedIndirect, 2, 6);
+    set(0x31, "AND", Operation::AND, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // ASL
 
     // Branches
 
     // BIT
+    set(0x24, "BIT", Operation::BIT, AddressingMode::ZeroPage, 2, 3);
+    set(0x2C, "BIT", Operation::BIT, AddressingMode::Absolute, 3, 4);
 
     // BRK
 
@@ -93,6 +103,14 @@ inline constexpr auto opcode_table = [] {
     set(0x88, "DEY", Operation::DEY, AddressingMode::Implied, 1, 2);
 
     // EOR
+    set(0x49, "EOR", Operation::EOR, AddressingMode::Immediate, 2, 2);
+    set(0x45, "EOR", Operation::EOR, AddressingMode::ZeroPage, 2, 3);
+    set(0x55, "EOR", Operation::EOR, AddressingMode::ZeroPageX, 2, 4);
+    set(0x4D, "EOR", Operation::EOR, AddressingMode::Absolute, 3, 4);
+    set(0x5D, "EOR", Operation::EOR, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0x59, "EOR", Operation::EOR, AddressingMode::AbsoluteY, 3, 4, true);
+    set(0x41, "EOR", Operation::EOR, AddressingMode::IndexedIndirect,2, 6);
+    set(0x51, "EOR", Operation::EOR, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // HLT
     set(0x02, "HLT", Operation::HLT, AddressingMode::Implied, 2, 2);
@@ -134,6 +152,14 @@ inline constexpr auto opcode_table = [] {
     set(0xEA, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
 
     // ORA
+    set(0x09, "ORA", Operation::ORA, AddressingMode::Immediate, 2, 2);
+    set(0x05, "ORA", Operation::ORA, AddressingMode::ZeroPage, 2, 3);
+    set(0x15, "ORA", Operation::ORA, AddressingMode::ZeroPageX, 2, 4);
+    set(0x0D, "ORA", Operation::ORA, AddressingMode::Absolute, 3, 4);
+    set(0x1D, "ORA", Operation::ORA, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0x19, "ORA", Operation::ORA, AddressingMode::AbsoluteY, 3, 4, true);
+    set(0x01, "ORA", Operation::ORA, AddressingMode::IndexedIndirect, 2, 6);
+    set(0x11, "ORA", Operation::ORA, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // Stack
 
