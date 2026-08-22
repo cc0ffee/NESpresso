@@ -80,6 +80,11 @@ inline constexpr auto opcode_table = [] {
     set(0x31, "AND", Operation::AND, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // ASL
+    set(0x0A, "ASL", Operation::ASL, AddressingMode::Accumulator, 1, 2);
+    set(0x06, "ASL", Operation::ASL, AddressingMode::ZeroPage, 2, 5);
+    set(0x16, "ASL", Operation::ASL, AddressingMode::ZeroPageX, 2, 6);
+    set(0x0E, "ASL", Operation::ASL, AddressingMode::Absolute, 3, 6);
+    set(0x1E, "ASL", Operation::ASL, AddressingMode::AbsoluteX, 3, 7);
 
     // Branches
 
@@ -169,6 +174,11 @@ inline constexpr auto opcode_table = [] {
     set(0xBC, "LDY", Operation::LDY, AddressingMode::AbsoluteX, 3, 4, true);
 
     // LSR
+    set(0x4A, "LSR", Operation::LSR, AddressingMode::Accumulator, 1, 2);
+    set(0x46, "LSR", Operation::LSR, AddressingMode::ZeroPage, 2, 5);
+    set(0x56, "LSR", Operation::LSR, AddressingMode::ZeroPageX, 2, 6);
+    set(0x4E, "LSR", Operation::LSR, AddressingMode::Absolute, 3, 6);
+    set(0x5E, "LSR", Operation::LSR, AddressingMode::AbsoluteX, 3, 7);
 
     // NOP
     set(0xEA, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
@@ -188,8 +198,18 @@ inline constexpr auto opcode_table = [] {
     // RLA
 
     // ROL
+    set(0x2A, "ROL", Operation::ROL, AddressingMode::Accumulator, 1, 2);
+    set(0x26, "ROL", Operation::ROL, AddressingMode::ZeroPage, 2, 5);
+    set(0x36, "ROL", Operation::ROL, AddressingMode::ZeroPageX, 2, 6);
+    set(0x2E, "ROL", Operation::ROL, AddressingMode::Absolute, 3, 6);
+    set(0x3E, "ROL", Operation::ROL, AddressingMode::AbsoluteX, 3, 7);
 
     // ROR
+    set(0x6A, "ROR", Operation::ROR, AddressingMode::Accumulator, 1, 2);
+    set(0x66, "ROR", Operation::ROR, AddressingMode::ZeroPage, 2, 5);
+    set(0x76, "ROR", Operation::ROR, AddressingMode::ZeroPageX, 2, 6);
+    set(0x6E, "ROR", Operation::ROR, AddressingMode::Absolute, 3, 6);
+    set(0x7E, "ROR", Operation::ROR, AddressingMode::AbsoluteX, 3, 7);
 
     // Returns
 

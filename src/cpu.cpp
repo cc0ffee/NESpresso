@@ -200,6 +200,14 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             reg_a_ &= read_operand(mode, operand);
             update_nz_flags(reg_a_);
             break;
+        case Operation::ASL: {
+            const std::uint8_t val = read_operand(mode, operand);
+            set_flag(Carry, (val & 0x80) != 0);
+            const std::uint8_t result = static_cast<std::uint8_t>(val << 1);
+            write_operand(mode, operand, result);
+            update_nz_flags(result);
+            break;
+        };
         case Operation::BIT: {
             const std::uint8_t val = read_operand(mode, operand);
             set_flag(Zero, (reg_a_ & val) == 0);
@@ -263,6 +271,14 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             reg_y_ = read_operand(mode, operand);
             update_nz_flags(reg_y_);
             break;
+        case Operation::LSR: {
+            const std::uint8_t val = read_operand(mode, operand);
+            set_flag(Carry, (val & 0x01) != 0);
+            const std::uint8_t result = static_cast<std::uint8_t>(val >> 1);
+            write_operand(mode, operand, result);
+            update_nz_flags(result);
+            break;
+        };
         case Operation::NOP: {
             if (mode != AddressingMode::Implied) {
                 read_operand(mode, operand);
@@ -273,6 +289,24 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             reg_a_ |= read_operand(mode, operand);
             update_nz_flags(reg_a_);
             break;
+        case Operation::ROL: {
+            const std::uint8_t val = read_operand(mode, operand);
+            const bool old_carry = get_flag(Carry);
+            set_flag(Carry, (val & 0x80) != 0);
+            const std::uint8_t result = static_cast<std::uint8_t>((val << 1) | (old_carry ? 1 : 0));
+            write_operand(mode, operand, result);
+            update_nz_flags(result);
+            break;
+        }
+        case Operation::ROR: {
+            const std::uint8_t val = read_operand(mode, operand);
+            const bool old_carry = get_flag(Carry);
+            set_flag(Carry, (val & 0x01) != 0);
+            const std::uint8_t result = static_cast<std::uint8_t>((val >> 1) | (old_carry ? 0x80 : 0));
+            write_operand(mode, operand, result);
+            update_nz_flags(result);
+            break;
+        }
         case Operation::SBC:
             add_to_accumulator(read_operand(mode, operand) ^ 0xFF);
             break;
