@@ -87,6 +87,14 @@ inline constexpr auto opcode_table = [] {
     set(0x1E, "ASL", Operation::ASL, AddressingMode::AbsoluteX, 3, 7);
 
     // Branches
+    set(0x90, "BCC", Operation::BCC, AddressingMode::Relative, 2, 2);
+    set(0xB0, "BCS", Operation::BCS, AddressingMode::Relative, 2, 2);
+    set(0xF0, "BEQ", Operation::BEQ, AddressingMode::Relative, 2, 2);
+    set(0x30, "BMI", Operation::BMI, AddressingMode::Relative, 2, 2);
+    set(0xD0, "BNE", Operation::BNE, AddressingMode::Relative, 2, 2);
+    set(0x10, "BPL", Operation::BPL, AddressingMode::Relative, 2, 2);
+    set(0x50, "BVC", Operation::BVC, AddressingMode::Relative, 2, 2);
+    set(0x70, "BVS", Operation::BVS, AddressingMode::Relative, 2, 2);
 
     // BIT
     set(0x24, "BIT", Operation::BIT, AddressingMode::ZeroPage, 2, 3);
@@ -148,6 +156,8 @@ inline constexpr auto opcode_table = [] {
     set(0xC8, "INY", Operation::INY, AddressingMode::Implied, 1, 2);
 
     // JMP / JSR
+    set(0x4C, "JMP", Operation::JMP, AddressingMode::Absolute, 3, 3);
+    set(0x6C, "JMP", Operation::JMP, AddressingMode::Indirect, 3, 5);
 
     // LDA
     set(0xA9, "LDA", Operation::LDA, AddressingMode::Immediate, 2, 2);

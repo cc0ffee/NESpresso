@@ -208,6 +208,15 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             update_nz_flags(result);
             break;
         };
+        case Operation::BCC:
+            branch(!get_flag(Carry), operand, cycles);
+            break;
+        case Operation::BCS:
+            branch(get_flag(Carry), operand, cycles);
+            break;
+        case Operation::BEQ:
+            branch(get_flag(Zero), operand, cycles);
+            break;
         case Operation::BIT: {
             const std::uint8_t val = read_operand(mode, operand);
             set_flag(Zero, (reg_a_ & val) == 0);
@@ -215,6 +224,21 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             set_flag(Negative, (val & 0x80) != 0);
             break;
         }
+        case Operation::BMI:
+            branch(get_flag(Negative), operand, cycles);
+            break;
+        case Operation::BNE:
+            branch(!get_flag(Zero), operand, cycles);
+            break;
+        case Operation::BPL:
+            branch(!get_flag(Negative), operand, cycles);
+            break;
+        case Operation::BVC:
+            branch(!get_flag(Overflow), operand, cycles);
+            break;
+        case Operation::BVS:
+            branch(get_flag(Overflow), operand, cycles);
+            break;
         case Operation::CMP:
             compare_register(reg_a_, read_operand(mode, operand));
             break;
@@ -258,6 +282,9 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
         case Operation::INY:
             ++reg_y_;
             update_nz_flags(reg_y_);
+            break;
+        case Operation::JMP:
+            pc_ = operand.address;
             break;
         case Operation::LDA:
             reg_a_ = read_operand(mode, operand);
