@@ -158,6 +158,7 @@ inline constexpr auto opcode_table = [] {
     // JMP / JSR
     set(0x4C, "JMP", Operation::JMP, AddressingMode::Absolute, 3, 3);
     set(0x6C, "JMP", Operation::JMP, AddressingMode::Indirect, 3, 5);
+    set(0x20, "JSR", Operation::JSR, AddressingMode::Absolute, 3, 6);
 
     // LDA
     set(0xA9, "LDA", Operation::LDA, AddressingMode::Immediate, 2, 2);
@@ -204,6 +205,10 @@ inline constexpr auto opcode_table = [] {
     set(0x11, "ORA", Operation::ORA, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // Stack
+    set(0x48, "PHA", Operation::PHA, AddressingMode::Implied, 1, 3);
+    set(0x08, "PHP", Operation::PHP, AddressingMode::Implied, 1, 3);
+    set(0x68, "PLA", Operation::PLA, AddressingMode::Implied, 1, 4);
+    set(0x28, "PLP", Operation::PLP, AddressingMode::Implied, 1, 4);
 
     // RLA
 
@@ -222,6 +227,7 @@ inline constexpr auto opcode_table = [] {
     set(0x7E, "ROR", Operation::ROR, AddressingMode::AbsoluteX, 3, 7);
 
     // Returns
+    set(0x60, "RTS", Operation::RTS, AddressingMode::Implied, 1, 6);
 
     // SBC
     set(0xE9, "SBC", Operation::SBC, AddressingMode::Immediate, 2, 2);

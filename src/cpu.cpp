@@ -286,6 +286,10 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
         case Operation::JMP:
             pc_ = operand.address;
             break;
+        case Operation::JSR:
+            push16(static_cast<std::uint16_t>(pc_ - 1));
+            pc_ = operand.address;
+            break;
         case Operation::LDA:
             reg_a_ = read_operand(mode, operand);
             update_nz_flags(reg_a_);
@@ -316,6 +320,21 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             reg_a_ |= read_operand(mode, operand);
             update_nz_flags(reg_a_);
             break;
+        case Operation::PHA:
+            push(reg_a_);
+            break;
+        case Operation::PHP:
+            push(status_ | Break | Unused);
+            break;
+        case Operation::PLA:
+            reg_a_ = pop();
+            update_nz_flags(reg_a_);
+            break;
+        case Operation::PLP:
+            status_ = pop();
+            status_ &= ~Break;
+            status_ |= Unused;
+            break;
         case Operation::ROL: {
             const std::uint8_t val = read_operand(mode, operand);
             const bool old_carry = get_flag(Carry);
@@ -334,6 +353,9 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             update_nz_flags(result);
             break;
         }
+        case Operation::RTS:
+            pc_ = static_cast<std::uint16_t>(pop16() + 1);
+            break;
         case Operation::SBC:
             add_to_accumulator(read_operand(mode, operand) ^ 0xFF);
             break;
