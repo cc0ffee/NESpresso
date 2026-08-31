@@ -7,6 +7,7 @@ add_executable(nes
     src/cartridge.cpp
     src/bus.cpp
     src/cpu.cpp
+    src/ppu.cpp
     src/mappers/mapper0.cpp
 )
 target_include_directories(nes PRIVATE include)
