@@ -233,11 +233,43 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
         case Operation::BPL:
             branch(!get_flag(Negative), operand, cycles);
             break;
+        case Operation::BRK: {
+            if (!DoNMI) {
+                ++pc_;
+            }
+            push16(pc_);
+            std::uint8_t pushed_status = status_ | Unused;
+            if (DoNMI) {
+                pushed_status &= static_cast<std::uint8_t>(~Break);
+            } else {
+                pushed_status |= Break;
+            }
+
+            push(pushed_status);
+            set_flag(InterruptDisable, true);
+            const std::uint8_t low = bus_.cpu_memRead(DoNMI ? 0xFFFA : 0xFFFE);
+            const std::uint8_t high = bus_.cpu_memRead(static_cast<std::uint16_t>(DoNMI ? 0xFFFB : 0xFFFF));
+            pc_ = static_cast<std::uint16_t>(low) | (static_cast<std::uint16_t>(high) << 8);
+            DoNMI = false;
+            break;
+        };
         case Operation::BVC:
             branch(!get_flag(Overflow), operand, cycles);
             break;
         case Operation::BVS:
             branch(get_flag(Overflow), operand, cycles);
+            break;
+        case Operation::CLC:
+            set_flag(Carry, false);
+            break;
+        case Operation::CLD:
+            set_flag(Decimal, false);
+            break;
+        case Operation::CLI:
+            set_flag(InterruptDisable, false);
+            break;
+        case Operation::CLV:
+            set_flag(Overflow, false);
             break;
         case Operation::CMP:
             compare_register(reg_a_, read_operand(mode, operand));
@@ -353,11 +385,26 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             update_nz_flags(result);
             break;
         }
+        case Operation::RTI:
+            status_ = pop();
+            set_flag(Break, false);
+            set_flag(Unused, true);
+            pc_ = pop16();
+            break;
         case Operation::RTS:
             pc_ = static_cast<std::uint16_t>(pop16() + 1);
             break;
         case Operation::SBC:
             add_to_accumulator(read_operand(mode, operand) ^ 0xFF);
+            break;
+        case Operation::SEC:
+            set_flag(Carry, true);
+            break;
+        case Operation::SED:
+            set_flag(Decimal, true);
+            break;
+        case Operation::SEI:
+            set_flag(InterruptDisable, true);
             break;
         case Operation::STA:
             write_operand(mode, operand, reg_a_);

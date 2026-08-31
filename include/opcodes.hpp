@@ -101,8 +101,13 @@ inline constexpr auto opcode_table = [] {
     set(0x2C, "BIT", Operation::BIT, AddressingMode::Absolute, 3, 4);
 
     // BRK
+    set(0x00, "BRK", Operation::BRK, AddressingMode::Implied, 1, 7);
 
     // Flag instructions
+    set(0x18, "CLC", Operation::CLC, AddressingMode::Implied, 1, 2);
+    set(0xD8, "CLD", Operation::CLD, AddressingMode::Implied, 1, 2);
+    set(0x58, "CLI", Operation::CLI, AddressingMode::Implied, 1, 2);
+    set(0xB8, "CLV", Operation::CLV, AddressingMode::Implied, 1, 2);
 
     // CMP
     set(0xC9, "CMP", Operation::CMP, AddressingMode::Immediate, 2, 2);
@@ -227,6 +232,7 @@ inline constexpr auto opcode_table = [] {
     set(0x7E, "ROR", Operation::ROR, AddressingMode::AbsoluteX, 3, 7);
 
     // Returns
+    set(0x40, "RTI", Operation::RTI, AddressingMode::Implied, 1, 6);
     set(0x60, "RTS", Operation::RTS, AddressingMode::Implied, 1, 6);
 
     // SBC
@@ -240,6 +246,9 @@ inline constexpr auto opcode_table = [] {
     set(0xF1, "SBC", Operation::SBC, AddressingMode::IndirectIndexed, 2, 5, true);
 
     // Set flags
+    set(0x38, "SEC", Operation::SEC, AddressingMode::Implied, 1, 2);
+    set(0xF8, "SED", Operation::SED, AddressingMode::Implied, 1, 2);
+    set(0x78, "SEI", Operation::SEI, AddressingMode::Implied, 1, 2);
 
     // STA
     set(0x85, "STA", Operation::STA, AddressingMode::ZeroPage, 2, 3);
