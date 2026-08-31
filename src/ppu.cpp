@@ -143,4 +143,27 @@ std::uint8_t PPU::ppu_directRead(std::uint16_t addr) {
 }
 
 
-void PPU::step() {}
+void PPU::step() {
+    ++ppuDot;
+
+    if (ppuDot >= 341) {
+        ppuDot = 0;
+        ++ppuScanline;
+
+        if (ppuScanline >= 262) {
+            ppuScanline = 0;
+        }
+    }
+    if (ppuDot == 1 && ppuScanline == 241) {
+        status_ |= 0x80;
+        frame_ready_ = true;
+    }
+
+
+    else if (ppuDot == 1 && ppuScanline == 261) {
+        status_ &= 0x1F;
+        sprite_count_ = 0;
+        scanline_contains_sprite_zero_ = false;
+    }
+
+}

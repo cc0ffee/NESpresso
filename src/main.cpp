@@ -12,5 +12,8 @@ int main(int argc, char** argv) {
     Bus bus(cartridge, ppu);
     CPU cpu(bus);
     cpu.reset();
-    for (unsigned i = 0; i < 500000 && !cpu.cpu_halt_; ++i) { cpu.step(); }
+    for (unsigned i = 0; i < 500000 && !cpu.cpu_halt_; ++i) {
+        const int cycles = cpu.step();
+        for (int dot = 0; dot < cycles * 3; ++dot) { ppu.step(); }
+    }
 }

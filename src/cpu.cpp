@@ -454,7 +454,19 @@ void CPU::Tracelogger(std::uint16_t instruction_pc, const Opcode& opcode) {
 
 std::uint8_t CPU::step() {
 
-    curr_op_ = bus_.cpu_memRead(pc_++);
+    bool prevNMILevel = NMILevelDetector;
+    const bool new_nmi_level = bus_.calc_nmi_vblank();
+    if(!prevNMILevel && new_nmi_level) {
+        DoNMI = true;
+        ++nmi_count_;
+    }
+    NMILevelDetector = new_nmi_level;
+
+    if (!DoNMI) {
+        curr_op_ = bus_.cpu_memRead(pc_++);
+    } else {
+        curr_op_ = 0x00;
+    }
 
     const Opcode& opcode = opcode_table[curr_op_];
 
