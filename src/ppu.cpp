@@ -166,4 +166,99 @@ void PPU::step() {
         scanline_contains_sprite_zero_ = false;
     }
 
+
+
+    if ((ppuScanline < 240) || ppuScanline == 261) {
+        if ((ppuDot > 0 && ppuDot <= 256) || (ppuDot > 320 && ppuDot <= 336)) {
+            if (mask_ & 0x18) {
+                if (mask_ & 0x08) {
+                    bg_pattern_low_shift_ <<= 1;
+                    bg_pattern_high_shift_ <<= 1;
+                    bg_attribute_low_shift_ <<= 1;
+                    bg_attribute_high_shift_ <<= 1;
+                }
+
+
+
+                const std::uint8_t cycleTick = static_cast<std::uint8_t>((ppuDot - 1) & 0x07);
+
+                switch(cycleTick) {
+                    case 0:
+                        bg_pattern_low_shift_ = static_cast<std::uint16_t>((bg_pattern_low_shift_ & 0xFF00) | bg_pattern_low_bitplane_);
+                        bg_pattern_high_shift_ = static_cast<std::uint16_t>((bg_pattern_high_shift_ & 0xFF00) | bg_pattern_high_bitplane_);
+                        bg_attribute_low_shift_ = static_cast<std::uint16_t>((bg_attribute_low_shift_ & 0xFF00) | ((tile_attr_ & 0x01) ? 0xFF : 0x00));
+                        bg_attribute_high_shift_= static_cast<std::uint16_t>((bg_attribute_high_shift_ & 0xFF00) | ((tile_attr_ & 0x02) ? 0xFF : 0x00));
+                        ppu_address_bus_ = static_cast<std::uint16_t>(0x2000 | (reg_v_ & 0x0FFF));
+                        ppu_temp_ = ppu_directRead(ppu_address_bus_);
+                        break;
+                    case 1:
+                        ppu_nextChar = ppu_temp_;
+                        break;
+                    case 2:
+                        ppu_address_bus_ = static_cast<std::uint16_t>(0x23C0 | (reg_v_ & 0x0C00) | ((reg_v_ >> 4) & 0x38) | ((reg_v_ >> 2) & 0x07));
+                        ppu_temp_ = ppu_directRead(ppu_address_bus_);
+                        break;
+                    case 3:
+                        tile_attr_ = ppu_temp_;
+                        if ((reg_v_ & 0x3) >= 0x2) {
+                            tile_attr_ = static_cast<std::uint8_t>(tile_attr_ >> 2);
+                        }
+                        if ((((reg_v_ & 0b0000001111100000) >> 5) & 3) >= 2) {
+                            tile_attr_ = static_cast<std::uint8_t>(tile_attr_ >> 4);
+                        }
+                        tile_attr_ = static_cast<std::uint8_t>(tile_attr_ & 3);
+                        break;
+                    case 4:
+                        ppu_address_bus_ = static_cast<std::uint16_t>(((ctrl_ & 0x10) ? 0x1000 : 0x0000) | (ppu_nextChar << 4) | ((reg_v_ >> 12) & 0x07));
+                        ppu_temp_ = ppu_directRead(ppu_address_bus_);
+                        break;
+                    case 5:
+                        bg_pattern_low_bitplane_ = ppu_temp_;
+                        ppu_address_bus_ += 8;
+                        break;
+                    case 6:
+                        ppu_temp_ = ppu_directRead(ppu_address_bus_);
+                        break;
+                    case 7:
+                        bg_pattern_high_bitplane_ = ppu_temp_;
+                        if ((reg_v_ & 0x001F) == 31) {
+                            reg_v_ &= static_cast<std::uint16_t>(~0x001F);
+                            reg_v_ ^= 0x0400;
+                        } else {
+                            ++reg_v_;
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
+    if (ppuScanline < 240 && ppuDot > 0 && ppuDot <= 256) {
+        std::uint8_t PalHi = 0;
+        std::uint8_t PalLo = 0;
+
+        if (((mask_ & 0x08) != 0) && (ppuDot > 8 || ((mask_ & 0x02) != 0))) {
+            const int shift = 15 - ppu_scroll_fine_x_;
+            std::uint8_t col0 = static_cast<std::uint8_t>(bg_pattern_low_shift_ >> shift & 1);
+            std::uint8_t col1 = static_cast<std::uint8_t>(bg_pattern_high_shift_ >> shift & 1);
+            PalLo = static_cast<std::uint8_t>((col1 << 1) | col0);
+
+            std::uint8_t pal0 = static_cast<std::uint8_t>(bg_attribute_low_shift_ >> shift & 1);
+            std::uint8_t pal1 = static_cast<std::uint8_t>(bg_attribute_high_shift_ >> shift & 1);
+            PalHi = static_cast<std::uint8_t>((pal1 << 1) | pal0);
+
+            if (PalLo == 0 && PalHi != 0) {
+                PalHi = 0;
+            }
+        }
+
+        const std::uint8_t palette_address = static_cast<std::uint8_t>((PalHi << 2) | PalLo);
+        const std::size_t pixel_index = static_cast<std::size_t>(ppuScanline) * screen_width + static_cast<std::size_t>(ppuDot - 1);
+        framebuffer_[pixel_index] = palette_ram_[palette_address] & 0x3F;
+    }
+
+
+
+
 }
+

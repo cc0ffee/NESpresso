@@ -11,3 +11,5 @@ add_executable(nes
     src/mappers/mapper0.cpp
 )
 target_include_directories(nes PRIVATE include)
+find_package(SDL2 REQUIRED CONFIG)
+target_link_libraries(nes PRIVATE $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main> SDL2::SDL2)
