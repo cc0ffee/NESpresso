@@ -259,6 +259,41 @@ void PPU::step() {
 
 
 
+    if (((mask_ & 0x18) != 0) && (ppuScanline < 240 || ppuScanline == 261)) {
+        if (ppuDot == 256) {
+            incScrollY();
+        } else if (ppuDot == 257) {
+            resetXScroll();
+        }
 
+        if (ppuDot >= 280 && ppuDot <= 304 && ppuScanline == 261) {
+            resetYScroll();
+        }
+    }
+}
+
+void PPU::incScrollY() {
+    if ((reg_v_ & 0x7000) != 0x7000) {
+        reg_v_ += 0x1000;
+    } else {
+        reg_v_ &= 0x0FFF;
+        int y = (reg_v_ & 0x03E0) >> 5;
+        if (y == 29) {
+            y = 0;
+            reg_v_ ^= 0x0800;
+        } else {
+            y++;
+            y &= 0x1F;
+        }
+        reg_v_ = static_cast<uint16_t>((reg_v_ & 0xFC1F) | (y << 5));
+    }
+}
+
+void PPU::resetXScroll() {
+    reg_v_ = (reg_v_ & 0b0111101111100000) | (reg_t_ & 0b0000010000011111);
+}
+
+void PPU::resetYScroll() {
+    reg_v_ = (reg_v_ & 0b0000010000011111) | (reg_t_ & 0b0111101111100000);
 }
 
