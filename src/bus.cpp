@@ -35,6 +35,10 @@ void Bus::cpu_memWrite(std::uint16_t addr, std::uint8_t val) {
         const std::uint16_t reg_addr = 0x2000 | (addr & 0x0007);
         ppu_.ppu_writeReg(reg_addr, val);
         return;
+    } else if (addr == 0x4014) {
+        for (int i = 0; i < 256; i++) {
+            ppu_.oam_data_[i] = cpu_memRead((static_cast<std::uint16_t>(val << 8) + i));
+        }
     }
 }
 

@@ -178,7 +178,16 @@ void PPU::step() {
                     bg_attribute_high_shift_ <<= 1;
                 }
 
-
+                if (ppuScanline < 240 && ppuDot > 1 && ppuDot <= 256) {
+                    for (int i = 0; i < sprite_count_; ++i) {
+                        if (sprite_x_pos_[i] > 0) {
+                            --sprite_x_pos_[i];
+                        } else {
+                            sprite_pattern_low_shift_[i] <<= 1;
+                            sprite_pattern_high_shift_[i] <<= 1;
+                        }
+                    }
+                }
 
                 const std::uint8_t cycleTick = static_cast<std::uint8_t>((ppuDot - 1) & 0x07);
 
@@ -257,7 +266,9 @@ void PPU::step() {
         framebuffer_[pixel_index] = palette_ram_[palette_address] & 0x3F;
     }
 
-
+    if ((mask_ & 0x18) != 0 && ppuScanline < 240) {
+        spriteEvaluation();
+    }
 
     if (((mask_ & 0x18) != 0) && (ppuScanline < 240 || ppuScanline == 261)) {
         if (ppuDot == 256) {
@@ -297,3 +308,133 @@ void PPU::resetYScroll() {
     reg_v_ = (reg_v_ & 0b0000010000011111) | (reg_t_ & 0b0111101111100000);
 }
 
+void PPU::spriteEvaluation() {
+    if (ppuDot == 1) {
+        secondary_oam_addr_ = 0;
+        oam_addr_ = 0;
+        sprite_eval_tick_ = 0;
+        next_sprite_count_ = 0;
+        next_scanline_contains_sprite_zero_ = false;
+    }
+    if (ppuDot > 0 && ppuDot <= 64) {
+        if ((ppuDot & 1) == 1) {
+            sprite_eval_temp_ = 0xFF;
+        } else {
+            secondary_oam_[secondary_oam_addr_] =
+                sprite_eval_temp_;
+
+            secondary_oam_addr_++;
+            secondary_oam_addr_ &= 0x1F;
+        }
+    } else if (ppuDot > 64 && ppuDot <= 256) {
+        if (oam_addr_ < oam_data_.size()) {
+            if ((ppuDot & 1) == 1) {
+                sprite_eval_temp_ = oam_data_[oam_addr_];
+            } else {
+                if (secondary_oam_addr_ < secondary_oam_.size()) {
+                    secondary_oam_[secondary_oam_addr_] =
+                        sprite_eval_temp_;
+                }
+
+                if (sprite_eval_tick_ == 0) {
+                    if (ppuScanline - sprite_eval_temp_ >= 0 &&
+                        ppuScanline - sprite_eval_temp_ <
+                            ((ctrl_ & 0x20) ? 16 : 8)) {
+
+                        if (secondary_oam_addr_ < secondary_oam_.size()) {
+                            if (oam_addr_ == 0) {
+                                next_scanline_contains_sprite_zero_ = true;
+                            }
+
+                            secondary_oam_addr_++;
+                            oam_addr_++;
+                            sprite_eval_tick_++;
+                        } else {
+                            status_ |= 0x20;
+                            oam_addr_ += 4;
+                        }
+                    } else {
+                        oam_addr_ += 4;
+                    }
+                } else {
+                    secondary_oam_addr_++;
+                    oam_addr_++;
+                    sprite_eval_tick_++;
+
+                    if (sprite_eval_tick_ == 4) {
+                        sprite_eval_tick_ = 0;
+                        next_sprite_count_++;
+                    }
+                }
+            }
+        }
+    } else if (ppuDot >= 257 && ppuDot <= 320) {
+        if (ppuDot == 257) {
+            sprite_count_ = next_sprite_count_;
+            scanline_contains_sprite_zero_ =
+            next_scanline_contains_sprite_zero_;
+        }
+        switch ((ppuDot - 257) & 7) {
+            case 0:
+                sprite_y_pos_[(ppuDot - 257) >> 3] = secondary_oam_[((ppuDot - 257) >> 3) * 4];
+                break;
+            case 1:
+                sprite_tile_[(ppuDot - 257) >> 3] = secondary_oam_[((ppuDot - 257) >> 3) * 4 + 1];
+                break;
+            case 2:
+                sprite_attr_[(ppuDot - 257) >> 3] = secondary_oam_[((ppuDot - 257) >> 3) * 4 + 2];
+                break;
+            case 3:
+                sprite_x_pos_[(ppuDot - 257) >> 3] = secondary_oam_[((ppuDot - 257) >> 3) * 4 + 3];
+                break;
+            case 4: {
+                const int slot = ((ppuDot - 257) >> 3);
+
+                if ((ctrl_ & 0x20) == 0) {
+                    int row = (ppuScanline - sprite_y_pos_[slot]) & 7;
+                    if (sprite_attr_[slot] & 0x80) {
+                        row = 7 - row;
+                    }
+                    ppu_address_bus_ = static_cast<std::uint16_t>(((ctrl_ & 0x08) ? 0x1000 : 0x0000) + (sprite_tile_[slot] * 16) + row);
+                } else {
+                    int row = (ppuScanline - sprite_y_pos_[slot]) & 15;
+                    if (sprite_attr_[slot] & 0x80) {
+                        row = 15 - row;
+                    }
+                    ppu_address_bus_ = static_cast<std::uint16_t>( ((sprite_tile_[slot] & 1) ? 0x1000 : 0x0000) + ((sprite_tile_[slot] & 0xFE) * 16) + ((row >= 8) ? 16 : 0) + (row & 7));
+                }
+
+                break;
+            }
+            case 5:
+                sprite_eval_temp_ = ppu_directRead(ppu_address_bus_);
+                if (ppuScanline == 261) {
+                    sprite_eval_temp_ = 0;
+                }
+
+                if (((sprite_attr_[((ppuDot - 257) >> 3)] >> 6) & 1) == 1) {
+                    sprite_eval_temp_ = static_cast<std::uint8_t>(((sprite_eval_temp_ & 0xF0) >> 4) | ((sprite_eval_temp_ & 0xF) << 4));
+                    sprite_eval_temp_ = static_cast<std::uint8_t>(((sprite_eval_temp_ & 0xCC) >> 2) | ((sprite_eval_temp_ & 0x33) << 2));
+                    sprite_eval_temp_ = static_cast<std::uint8_t>(((sprite_eval_temp_ & 0xAA) >> 1) | ((sprite_eval_temp_ & 0x55) << 1));
+                }
+                sprite_pattern_low_shift_[((ppuDot - 257) >> 3)] = sprite_eval_temp_;
+                break;
+            case 6:
+                ppu_address_bus_ += 8;
+                break;
+            case 7:
+                sprite_eval_temp_ = ppu_directRead(ppu_address_bus_);
+                if (ppuScanline == 261) {
+                    sprite_eval_temp_ = 0;
+                }
+
+                if (((sprite_attr_[((ppuDot - 257) >> 3)] >> 6) & 1) == 1) {
+                    sprite_eval_temp_ = static_cast<std::uint8_t>(((sprite_eval_temp_ & 0xF0) >> 4) | ((sprite_eval_temp_ & 0xF) << 4));
+                    sprite_eval_temp_ = static_cast<std::uint8_t>(((sprite_eval_temp_ & 0xCC) >> 2) | ((sprite_eval_temp_ & 0x33) << 2));
+                    sprite_eval_temp_ = static_cast<std::uint8_t>(((sprite_eval_temp_ & 0xAA) >> 1) | ((sprite_eval_temp_ & 0x55) << 1));
+                }
+                sprite_pattern_high_shift_[((ppuDot - 257) >> 3)] = sprite_eval_temp_;
+                break;
+        }
+    }
+}
