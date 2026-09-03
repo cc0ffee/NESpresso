@@ -13,6 +13,25 @@ std::uint8_t Bus::cpu_memRead(std::uint16_t addr) {
         return ppu_.ppu_read(reg_addr);
     }
 
+    if (addr == 0x4016) {
+        if (controller_strobe_) {
+            return controller1_buttons_ & 1;
+        }
+        const std::uint8_t controller_bit = controller1_shift_ & 1;
+        controller1_shift_ = static_cast<std::uint8_t>( (controller1_shift_ >> 1) | 0x80);
+        return controller_bit;
+    }
+
+    if (addr == 0x4017) {
+        if (controller_strobe_) {
+            return controller2_buttons_ & 1;
+        }
+
+        const std::uint8_t controller_bit = controller2_shift_ & 1;
+        controller2_shift_ = (controller2_shift_ >> 1) | 0x80;
+        return controller_bit;
+    }
+
     if (addr >= 0x4000 && addr <= 0x401F) {
         return 0;
     }
@@ -39,6 +58,13 @@ void Bus::cpu_memWrite(std::uint16_t addr, std::uint8_t val) {
         for (int i = 0; i < 256; i++) {
             ppu_.oam_data_[i] = cpu_memRead((static_cast<std::uint16_t>(val << 8) + i));
         }
+    } else if (addr == 0x4016) {
+        if (controller_strobe_ || (val & 1)) {
+            controller1_shift_ = controller1_buttons_;
+        }
+
+        controller_strobe_ = (val & 1) != 0;
+        return;
     }
 }
 

@@ -96,6 +96,33 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        const Uint8* keys = SDL_GetKeyboardState(nullptr);
+        bus.controller1_buttons_ = 0;
+        if (keys[SDL_SCANCODE_Z]) {
+            bus.controller1_buttons_ |= 0x01;  // A
+        }
+        if (keys[SDL_SCANCODE_X]) {
+            bus.controller1_buttons_ |= 0x02;  // B
+        }
+        if (keys[SDL_SCANCODE_RSHIFT]) {
+            bus.controller1_buttons_ |= 0x04;  // Select
+        }
+        if (keys[SDL_SCANCODE_RETURN]) {
+            bus.controller1_buttons_ |= 0x08;  // Start
+        }
+        if (keys[SDL_SCANCODE_UP]) {
+            bus.controller1_buttons_ |= 0x10;
+        }
+        if (keys[SDL_SCANCODE_DOWN]) {
+            bus.controller1_buttons_ |= 0x20;
+        }
+        if (keys[SDL_SCANCODE_LEFT]) {
+            bus.controller1_buttons_ |= 0x40;
+        }
+        if (keys[SDL_SCANCODE_RIGHT]) {
+            bus.controller1_buttons_ |= 0x80;
+        }
+
         if (!running) {
             break;
         }
