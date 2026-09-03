@@ -261,6 +261,43 @@ void PPU::step() {
             }
         }
 
+        std::uint8_t spritePalHi = 0;
+        std::uint8_t spritePalLo = 0;
+        bool spritePriority = false;
+
+        if ((mask_ & 0x10) && (ppuDot > 8 || (mask_ & 0x04))) {
+            for (int i = 0; i < sprite_count_; ++i) {
+                if (sprite_x_pos_[i] != 0) {
+                    continue;
+                }
+                bool spritePixelL = ((sprite_pattern_low_shift_[i] & 0x80) != 0);
+                bool spritePixelH = ((sprite_pattern_high_shift_[i] & 0x80) != 0);
+                spritePalLo = 0;
+                if (spritePixelL) { spritePalLo = 1; }
+                if (spritePixelH) { spritePalLo |= 2; }
+
+                if (spritePalLo == 0) {
+                    continue;
+                }
+
+                spritePalHi = static_cast<uint8_t>((sprite_attr_[i] & 0x03) | 0x04);
+                spritePriority = ((sprite_attr_[i] >> 5) & 1) == 0;
+
+                if (i == 0 && scanline_contains_sprite_zero_ && PalLo != 0 && ppuDot < 256) {
+                    status_ |= 0x40;
+                }
+                break;
+            }
+        }
+
+        if ((spritePriority && spritePalLo != 0) || PalLo == 0) {
+            PalLo = spritePalLo;
+            PalHi = spritePalHi;
+            if (PalLo == 0) {
+                PalHi = 0;
+            }
+        }
+
         const std::uint8_t palette_address = static_cast<std::uint8_t>((PalHi << 2) | PalLo);
         const std::size_t pixel_index = static_cast<std::size_t>(ppuScanline) * screen_width + static_cast<std::size_t>(ppuDot - 1);
         framebuffer_[pixel_index] = palette_ram_[palette_address] & 0x3F;
