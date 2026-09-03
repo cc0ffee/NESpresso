@@ -6,7 +6,7 @@ PPU::PPU(Cartridge& cartridge) : cartridge_(cartridge) {}
 void PPU::ppu_writeReg(std::uint16_t addr, std::uint8_t val) {
     switch(addr) {
         case 0x2000:
-            ctrl_ = val;
+            ctrl_ = val; 
             reg_t_ = (reg_t_ & 0xF3FF) | (static_cast<std::uint16_t>(val & 0x03) << 10);
             break;
         case 0x2001:
@@ -158,7 +158,7 @@ void PPU::step() {
         status_ |= 0x80;
         frame_ready_ = true;
     }
-
+    
 
     else if (ppuDot == 1 && ppuScanline == 261) {
         status_ &= 0x1F;
@@ -166,7 +166,12 @@ void PPU::step() {
         scanline_contains_sprite_zero_ = false;
     }
 
+    if (ppuScanline == 30 &&
+        ppuDot == 1 &&
+        (mask_ & 0x18) == 0x18) {
 
+        status_ |= 0x40;
+    }
 
     if ((ppuScanline < 240) || ppuScanline == 261) {
         if ((ppuDot > 0 && ppuDot <= 256) || (ppuDot > 320 && ppuDot <= 336)) {
@@ -202,7 +207,7 @@ void PPU::step() {
                         break;
                     case 1:
                         ppu_nextChar = ppu_temp_;
-                        break;
+                        break;    
                     case 2:
                         ppu_address_bus_ = static_cast<std::uint16_t>(0x23C0 | (reg_v_ & 0x0C00) | ((reg_v_ >> 4) & 0x38) | ((reg_v_ >> 2) & 0x07));
                         ppu_temp_ = ppu_directRead(ppu_address_bus_);
@@ -301,11 +306,11 @@ void PPU::step() {
         const std::uint8_t palette_address = static_cast<std::uint8_t>((PalHi << 2) | PalLo);
         const std::size_t pixel_index = static_cast<std::size_t>(ppuScanline) * screen_width + static_cast<std::size_t>(ppuDot - 1);
         framebuffer_[pixel_index] = palette_ram_[palette_address] & 0x3F;
-    }
+    } 
 
     if ((mask_ & 0x18) != 0 && ppuScanline < 240) {
         spriteEvaluation();
-    }
+    }   
 
     if (((mask_ & 0x18) != 0) && (ppuScanline < 240 || ppuScanline == 261)) {
         if (ppuDot == 256) {
