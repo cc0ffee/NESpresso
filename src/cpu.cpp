@@ -439,9 +439,9 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             update_nz_flags(reg_a_);
             break;
 
-        default:
-            throw std::runtime_error("Unhandled opcode");
-
+        case Operation::Invalid: {
+            //throw std::runtime_error("Attempted to execute invalid opcode");
+        }
     }
 }
 
