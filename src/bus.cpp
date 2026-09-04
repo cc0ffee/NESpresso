@@ -61,6 +61,7 @@ void Bus::cpu_memWrite(std::uint16_t addr, std::uint8_t val) {
     } else if (addr == 0x4016) {
         if (controller_strobe_ || (val & 1)) {
             controller1_shift_ = controller1_buttons_;
+            controller2_shift_ = controller2_buttons_;
         }
 
         controller_strobe_ = (val & 1) != 0;
