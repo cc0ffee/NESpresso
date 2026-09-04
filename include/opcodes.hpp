@@ -197,7 +197,34 @@ inline constexpr auto opcode_table = [] {
     set(0x5E, "LSR", Operation::LSR, AddressingMode::AbsoluteX, 3, 7);
 
     // NOP
+    set(0x1A, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
+    set(0x3A, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
+    set(0x5A, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
+    set(0x7A, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
+    set(0xDA, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
     set(0xEA, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
+    set(0xFA, "NOP", Operation::NOP, AddressingMode::Implied, 1, 2);
+    set(0x80, "NOP", Operation::NOP, AddressingMode::Immediate, 2, 2);
+    set(0x82, "NOP", Operation::NOP, AddressingMode::Immediate, 2, 2);
+    set(0x89, "NOP", Operation::NOP, AddressingMode::Immediate, 2, 2);
+    set(0xC2, "NOP", Operation::NOP, AddressingMode::Immediate, 2, 2);
+    set(0xE2, "NOP", Operation::NOP, AddressingMode::Immediate, 2, 2);
+    set(0x04, "NOP", Operation::NOP, AddressingMode::ZeroPage, 2, 3);
+    set(0x44, "NOP", Operation::NOP, AddressingMode::ZeroPage, 2, 3);
+    set(0x64, "NOP", Operation::NOP, AddressingMode::ZeroPage, 2, 3);
+    set(0x14, "NOP", Operation::NOP, AddressingMode::ZeroPageX, 2, 4);
+    set(0x34, "NOP", Operation::NOP, AddressingMode::ZeroPageX, 2, 4);
+    set(0x54, "NOP", Operation::NOP, AddressingMode::ZeroPageX, 2, 4);
+    set(0x74, "NOP", Operation::NOP, AddressingMode::ZeroPageX, 2, 4);
+    set(0xD4, "NOP", Operation::NOP, AddressingMode::ZeroPageX, 2, 4);
+    set(0xF4, "NOP", Operation::NOP, AddressingMode::ZeroPageX, 2, 4);
+    set(0x0C, "NOP", Operation::NOP, AddressingMode::Absolute, 3, 4);
+    set(0x1C, "NOP", Operation::NOP, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0x3C, "NOP", Operation::NOP, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0x5C, "NOP", Operation::NOP, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0x7C, "NOP", Operation::NOP, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0xDC, "NOP", Operation::NOP, AddressingMode::AbsoluteX, 3, 4, true);
+    set(0xFC, "NOP", Operation::NOP, AddressingMode::AbsoluteX, 3, 4, true);
 
     // ORA
     set(0x09, "ORA", Operation::ORA, AddressingMode::Immediate, 2, 2);
