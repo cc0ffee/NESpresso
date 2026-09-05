@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include "mappers/mapper0.hpp"
+#include "mappers/mapper2.hpp"
 
 namespace INesFlags6 {
     constexpr std::uint8_t vertical_mirroring = 1U << 0;
@@ -16,7 +17,7 @@ constexpr bool has_flag(std::uint8_t value, std::uint8_t mask) {
 }
 
 Cartridge::Cartridge(std::ifstream& rom) {
-
+    
     std::vector<std::uint8_t> rom_data(
         (std::istreambuf_iterator<char>(rom)),
         std::istreambuf_iterator<char>()
@@ -31,14 +32,14 @@ Cartridge::Cartridge(std::ifstream& rom) {
 
     const std::uint8_t flags_6 = rom_data[6];
     const std::uint8_t flags_7 = rom_data[7];
-
+    
     has_battery_ = has_flag(flags_6, INesFlags6::battery);
     has_trainer_ = has_flag(flags_6,  INesFlags6::trainer);
 
     const bool four_screen = has_flag(flags_6, INesFlags6::four_screen);
     const bool vertical = has_flag(flags_6,INesFlags6::vertical_mirroring);
-    if (four_screen) { mirroring_ = NameTableMirroring::FourScreen; }
-    else if (vertical) { mirroring_ = NameTableMirroring::Vertical; }
+    if (four_screen) { mirroring_ = NameTableMirroring::FourScreen; } 
+    else if (vertical) { mirroring_ = NameTableMirroring::Vertical; } 
     else { mirroring_ = NameTableMirroring::Horizontal; }
 
     const std::uint8_t mapper_lower = (flags_6 & INesFlags6::mapper_lower) >> 4;
@@ -48,6 +49,9 @@ Cartridge::Cartridge(std::ifstream& rom) {
     switch (mapper_id_) {
         case 0:
             mapper_ = std::make_unique<Mapper0>(prg_banks, chr_banks);
+            break;
+        case 2:
+            mapper_ = std::make_unique<Mapper2>(prg_banks, chr_banks);
             break;
         default:
             throw std::runtime_error("Unsupported mapper: " + std::to_string(mapper_id_));

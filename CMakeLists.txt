@@ -9,6 +9,7 @@ add_executable(nes
     src/cpu.cpp
     src/ppu.cpp
     src/mappers/mapper0.cpp
+    src/mappers/mapper2.cpp
 )
 target_include_directories(nes PRIVATE include)
 find_package(SDL2 REQUIRED CONFIG)

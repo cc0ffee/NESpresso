@@ -19,7 +19,7 @@ std::uint8_t Bus::cpu_memRead(std::uint16_t addr) {
         }
         const std::uint8_t controller_bit = controller1_shift_ & 1;
         controller1_shift_ = static_cast<std::uint8_t>( (controller1_shift_ >> 1) | 0x80);
-        return controller_bit;
+        return controller_bit; 
     }
 
     if (addr == 0x4017) {
@@ -65,6 +65,9 @@ void Bus::cpu_memWrite(std::uint16_t addr, std::uint8_t val) {
         }
 
         controller_strobe_ = (val & 1) != 0;
+        return;
+    } else if (addr >= 0x8000) {
+        cartridge_.cpu_memWrite(addr, val);
         return;
     }
 }
