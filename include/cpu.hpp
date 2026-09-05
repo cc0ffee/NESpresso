@@ -15,7 +15,6 @@ public:
     std::uint64_t nmi_count_{0};
 
 private:
-    void Tracelogger(std::uint16_t instruction_pc, const Opcode& opcode);
     enum StatusFlag : std::uint8_t {
         Carry = 1U << 0,
         Zero = 1U << 1,

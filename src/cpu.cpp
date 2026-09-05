@@ -445,13 +445,6 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
     }    
 }
 
-void CPU::Tracelogger(std::uint16_t instruction_pc, const Opcode& opcode) {
-    std::cout << std::format(
-        "${:04X}\t{:02X}\t{:<3}\tA:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X} CYC:{}\n",
-        instruction_pc, curr_op_, opcode.name, reg_a_, reg_x_, reg_y_, status_, sp_, total_cycles_
-    );
-}
-
 std::uint8_t CPU::step() {
 
     bool prevNMILevel = NMILevelDetector;
