@@ -8,7 +8,7 @@ public:
 
     virtual ~Mapper() = default;
     virtual std::optional<std::uint32_t> cpu_memRead(std::uint16_t addr) const = 0;
-    virtual void cpu_memWrite(std::uint16_t addr, std::uint8_t val) {}
+    virtual void cpu_memWrite(std::uint16_t, std::uint8_t) {}
 
 protected:
     std::uint8_t prg_banks_;
