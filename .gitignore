@@ -1,4 +1,7 @@
-.vscode/
+.vscode
 /build/
+/nes
+/nes.exe
 *.o
+*.d
 /roms/

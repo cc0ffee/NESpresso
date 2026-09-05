@@ -1,5 +1,9 @@
 # NES-cafe
 
-C++20 NES emulator, starting with the CPU and NROM loader.
 
-Build with CMake and run `./build/nes path/to/rom.nes`.
+
+## Requirements
+
+- A C++20-compatible compiler
+- [CMake](https://cmake.org/) 3.15 or newer
+- [SDL2](https://www.libsdl.org/) development libraries

@@ -103,7 +103,7 @@ CPU::AddressResult CPU::resolve_address(AddressingMode mode) {
         case AddressingMode::Implied:
         case AddressingMode::Accumulator:
             return {};
-
+        
         case AddressingMode::Immediate:
             return {pc_++, false};
         case AddressingMode::ZeroPage: {
@@ -294,7 +294,7 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             --reg_y_;
             update_nz_flags(reg_y_);
             break;
-        case Operation::EOR:
+        case Operation::EOR: 
             reg_a_ ^= read_operand(mode, operand);
             update_nz_flags(reg_a_);
             break;
@@ -438,11 +438,11 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             reg_a_ = reg_y_;
             update_nz_flags(reg_a_);
             break;
-
+        
         case Operation::Invalid: {
             //throw std::runtime_error("Attempted to execute invalid opcode");
         }
-    }
+    }    
 }
 
 void CPU::Tracelogger(std::uint16_t instruction_pc, const Opcode& opcode) {

@@ -3,7 +3,7 @@
 #include "opcodes.hpp"
 
 class CPU {
-public:
+public: 
     explicit CPU(Bus& bus);
     void reset();
 
