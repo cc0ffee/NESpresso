@@ -7,6 +7,8 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 
 struct Color {
@@ -77,7 +79,7 @@ int main(int argc, char *argv[]) {
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window_ = SDL_CreateWindow("NES Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, bitmap_width * 3, bitmap_height * 3, SDL_WINDOW_SHOWN);
-    SDL_Renderer* renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer* renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
     SDL_Texture* texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, bitmap_width, bitmap_height);
     SDL_SetTextureScaleMode(texture_, SDL_ScaleModeNearest);
 
@@ -86,6 +88,9 @@ int main(int argc, char *argv[]) {
     bool running = true;
 
     std::uint64_t frame_count = 0;
+    const auto frame_duration =
+    std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<double>(1.0 / 60.0));
+    auto next_frame = std::chrono::steady_clock::now();
 
     while (running) {
         SDL_Event event;
@@ -99,16 +104,16 @@ int main(int argc, char *argv[]) {
         const Uint8* keys = SDL_GetKeyboardState(nullptr);
         bus.controller1_buttons_ = 0;
         if (keys[SDL_SCANCODE_Z]) {
-            bus.controller1_buttons_ |= 0x01;  // A
+            bus.controller1_buttons_ |= 0x01;
         }
         if (keys[SDL_SCANCODE_X]) {
-            bus.controller1_buttons_ |= 0x02;  // B
+            bus.controller1_buttons_ |= 0x02;
         }
         if (keys[SDL_SCANCODE_RSHIFT]) {
-            bus.controller1_buttons_ |= 0x04;  // Select
+            bus.controller1_buttons_ |= 0x04;
         }
         if (keys[SDL_SCANCODE_RETURN]) {
-            bus.controller1_buttons_ |= 0x08;  // Start
+            bus.controller1_buttons_ |= 0x08;
         }
         if (keys[SDL_SCANCODE_UP]) {
             bus.controller1_buttons_ |= 0x10;
@@ -149,6 +154,12 @@ int main(int argc, char *argv[]) {
         SDL_RenderClear(renderer_);
         SDL_RenderCopy(renderer_, texture_, nullptr, nullptr);
         SDL_RenderPresent(renderer_);
+        next_frame += frame_duration;
+        std::this_thread::sleep_until(next_frame);
+        
+        if (std::chrono::steady_clock::now() > next_frame + frame_duration) {
+            next_frame = std::chrono::steady_clock::now();
+        }
     }
 
     SDL_DestroyTexture(texture_);
