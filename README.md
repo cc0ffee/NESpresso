@@ -1,6 +1,19 @@
 # NESpresso
 
-Emulation of the Nintendo Entertainment System (NES)
+<img src="https://i.imgur.com/4smgNBV.gif" align="right" width="38%"/>
+
+Emulation of the Nintendo Entertainment System (NES) implemented with C++ and SDL2 library.
+
+Built from scratch to learn how the NES and emulation works, it implements the CPU, PPU, memory bus, and cartridge hardware with ongoing work to improve accuracy and compatibility.
+
+Currently there are 2 supported cartridge mappers:
+- **Mapper 0 (NROM)**
+- **Mapper 2 (UxROM)**
+
+These implemented mappers allow the emulator to run ~300 NES games!
+
+> [!WARNING]
+> Game compatibility varies, and the emulator is not yet cycle-accurate. Audio and additional mappers are planned.
 
 ## Requirements
 
@@ -53,3 +66,4 @@ Pass the path to a NES ROM as the first argument:
 ### Acknowledgments
 - [NESDev Wiki Reference](https://www.nesdev.org/wiki/NES_reference_guide)
 - [100th_Coin's NES Post](https://www.patreon.com/100th_Coin/posts/making-your-nes-137873901)
+- [emudev.de](https://emudev.de/nes-emulator/overview/)
