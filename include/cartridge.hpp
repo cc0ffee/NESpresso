@@ -17,6 +17,7 @@ public:
     explicit Cartridge(std::ifstream& rom);
     std::optional<uint8_t> cpu_memRead(std::uint16_t addr);
     void cpu_memWrite(std::uint16_t addr, std::uint8_t val);
+    std::uint8_t ppu_memRead(std::uint16_t addr);
     NameTableMirroring mirroring_ = NameTableMirroring::Horizontal;
     const std::vector<std::uint8_t>& chr_memory() const {
         return chr_memory_;

@@ -3,6 +3,7 @@
 #include <string>
 #include "mappers/mapper0.hpp"
 #include "mappers/mapper2.hpp"
+#include "mappers/mapper3.hpp"
 
 namespace INesFlags6 {
     constexpr std::uint8_t vertical_mirroring = 1U << 0;
@@ -53,6 +54,9 @@ Cartridge::Cartridge(std::ifstream& rom) {
         case 2:
             mapper_ = std::make_unique<Mapper2>(prg_banks, chr_banks);
             break;
+        case 3:
+            mapper_ = std::make_unique<Mapper3>(prg_banks, chr_banks);
+            break;
         default:
             throw std::runtime_error("Unsupported mapper: " + std::to_string(mapper_id_));
     }
@@ -77,6 +81,8 @@ Cartridge::Cartridge(std::ifstream& rom) {
         uses_chr_ram_ = true;
     }
 
+    std::cout << static_cast<int>(mapper_id_) << std::endl;
+
 }
 
 std::optional<uint8_t> Cartridge::cpu_memRead(std::uint16_t addr) {
@@ -91,4 +97,8 @@ std::optional<uint8_t> Cartridge::cpu_memRead(std::uint16_t addr) {
 
 void Cartridge::cpu_memWrite(std::uint16_t addr, std::uint8_t val) {
     mapper_->cpu_memWrite(addr, val);
+}
+
+std::uint8_t Cartridge::ppu_memRead(std::uint16_t addr) {
+    return chr_memory_.at(mapper_->ppu_memRead(addr));
 }

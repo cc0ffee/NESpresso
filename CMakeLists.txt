@@ -16,6 +16,7 @@ add_executable(nes
     src/ppu.cpp
     src/mappers/mapper0.cpp
     src/mappers/mapper2.cpp
+    src/mappers/mapper3.cpp
 )
 
 target_include_directories(nes PRIVATE include)

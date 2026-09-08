@@ -92,7 +92,7 @@ std::uint8_t PPU::ppu_read(uint16_t addr) {
             const std::uint16_t vram_addr = reg_v_ & 0x3FFF;
             uint8_t temp = ppu_read_buffer_;
             if (vram_addr < 0x2000) {
-                ppu_read_buffer_ = cartridge_.chr_memory_[vram_addr];
+                ppu_read_buffer_ = cartridge_.ppu_memRead(vram_addr);
             } else if (vram_addr < 0x3F00) {
 
                 if (cartridge_.mirroring_ == NameTableMirroring::Horizontal) {
@@ -120,7 +120,7 @@ std::uint8_t PPU::ppu_directRead(std::uint16_t addr) {
     const std::uint16_t vram_addr = addr & 0x3FFF;
 
     if (vram_addr < 0x2000) {
-        return cartridge_.chr_memory_[vram_addr];
+        return cartridge_.ppu_memRead(vram_addr);;
     }
 
     if (vram_addr < 0x3F00) {

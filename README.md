@@ -9,8 +9,9 @@ Built from scratch to learn how the NES and emulation works, it implements the C
 Currently there are 2 supported cartridge mappers:
 - **Mapper 0 (NROM)**
 - **Mapper 2 (UxROM)**
+- **Mapper 3 (CNROM)**
 
-These implemented mappers allow the emulator to run ~300 NES games!
+These implemented mappers allow the emulator to run ~350 NES games!
 
 > [!WARNING]
 > Game compatibility varies, and the emulator is not yet cycle-accurate. Audio and additional mappers are planned.
