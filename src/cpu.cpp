@@ -190,6 +190,93 @@ void CPU::write_operand(AddressingMode mode, const AddressResult& operand, std::
     bus_.cpu_memWrite(operand.address, val);
 }
 
+void CPU::op_asl(AddressingMode mode, const AddressResult& operand) {
+    const std::uint8_t val = read_operand(mode, operand);
+    set_flag(Carry, (val & 0x80) != 0);
+    const std::uint8_t result = static_cast<std::uint8_t>(val << 1);
+    write_operand(mode, operand, result);
+    update_nz_flags(result);
+}
+
+void CPU::op_ora(AddressingMode mode, const AddressResult& operand) {
+    reg_a_ |= read_operand(mode, operand);
+    update_nz_flags(reg_a_);
+}
+
+void CPU::op_rol(AddressingMode mode, const AddressResult& operand) {
+    const std::uint8_t val = read_operand(mode, operand);
+    const bool old_carry = get_flag(Carry);
+    set_flag(Carry, (val & 0x80) != 0);
+    const std::uint8_t result = static_cast<std::uint8_t>((val << 1) | (old_carry ? 1 : 0));
+    write_operand(mode, operand, result);
+    update_nz_flags(result);
+}
+
+void CPU::op_and(AddressingMode mode, const AddressResult& operand) {
+    reg_a_ &= read_operand(mode, operand);
+    update_nz_flags(reg_a_);
+}
+
+void CPU::op_adc(AddressingMode mode, const AddressResult& operand) {
+    add_to_accumulator(read_operand(mode, operand));
+}
+
+void CPU::op_cmp(AddressingMode mode, const AddressResult& operand) {
+    compare_register(reg_a_, read_operand(mode, operand));
+}
+
+void CPU::op_dec(AddressingMode mode, const AddressResult& operand) {
+    const std::uint8_t result = static_cast<std::uint8_t>(read_operand(mode, operand) - 1);
+    write_operand(mode , operand, result);
+    update_nz_flags(result);
+}
+
+void CPU::op_eor(AddressingMode mode, const AddressResult& operand) {
+    reg_a_ ^= read_operand(mode, operand);
+    update_nz_flags(reg_a_);
+}
+
+void CPU::op_lda(AddressingMode mode, const AddressResult& operand) {
+    reg_a_ = read_operand(mode, operand);
+    update_nz_flags(reg_a_);
+}
+
+void CPU::op_ldx(AddressingMode mode, const AddressResult& operand) {
+    reg_x_ = read_operand(mode, operand);
+    update_nz_flags(reg_x_);
+}
+
+
+void CPU::op_lsr(AddressingMode mode, const AddressResult& operand) {
+    const std::uint8_t val = read_operand(mode, operand);
+    set_flag(Carry, (val & 0x01) != 0);
+    const std::uint8_t result = static_cast<std::uint8_t>(val >> 1);
+    write_operand(mode, operand, result);
+    update_nz_flags(result);
+}
+
+
+void CPU::op_ror(AddressingMode mode, const AddressResult& operand) {
+    const std::uint8_t val = read_operand(mode, operand);
+    const bool old_carry = get_flag(Carry);
+    set_flag(Carry, (val & 0x01) != 0);
+    const std::uint8_t result = static_cast<std::uint8_t>((val >> 1) | (old_carry ? 0x80 : 0));
+    write_operand(mode, operand, result);
+    update_nz_flags(result);
+}
+
+
+void CPU::op_inc(AddressingMode mode, const AddressResult& operand) {
+    const std::uint8_t result = static_cast<std::uint8_t>(read_operand(mode, operand) + 1);
+    write_operand(mode, operand, result);
+    update_nz_flags(result);
+}
+
+void CPU::op_sbc(AddressingMode mode, const AddressResult& operand) {
+    add_to_accumulator(read_operand(mode, operand) ^ 0xFF);
+}
+
+
 void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& operand, std::uint8_t& cycles) {
 
     switch (opcode) {
@@ -197,15 +284,10 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             add_to_accumulator(read_operand(mode, operand));
             break;
         case Operation::AND:
-            reg_a_ &= read_operand(mode, operand);
-            update_nz_flags(reg_a_);
+            op_and(mode, operand);
             break;
         case Operation::ASL: {
-            const std::uint8_t val = read_operand(mode, operand);
-            set_flag(Carry, (val & 0x80) != 0);
-            const std::uint8_t result = static_cast<std::uint8_t>(val << 1);
-            write_operand(mode, operand, result);
-            update_nz_flags(result);
+            op_asl(mode, operand);
             break;
         };
         case Operation::BCC:
@@ -281,9 +363,7 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             compare_register(reg_y_, read_operand(mode, operand));
             break;
         case Operation::DEC: {
-            const std::uint8_t result = static_cast<std::uint8_t>(read_operand(mode, operand) - 1);
-            write_operand(mode , operand, result);
-            update_nz_flags(result);
+            op_dec(mode, operand);
             break;
         };
         case Operation::DEX:
@@ -295,16 +375,13 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             update_nz_flags(reg_y_);
             break;
         case Operation::EOR: 
-            reg_a_ ^= read_operand(mode, operand);
-            update_nz_flags(reg_a_);
+            op_eor(mode, operand);
             break;
         case Operation::HLT:
             cpu_halt_ = true;
             break;
         case Operation::INC: {
-            const std::uint8_t result = static_cast<std::uint8_t>(read_operand(mode, operand) + 1);
-            write_operand(mode, operand, result);
-            update_nz_flags(result);
+            op_inc(mode, operand);
             break;
         }
         case Operation::INX:
@@ -323,23 +400,17 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             pc_ = operand.address;
             break;
         case Operation::LDA:
-            reg_a_ = read_operand(mode, operand);
-            update_nz_flags(reg_a_);
+            op_lda(mode, operand);
             break;
         case Operation::LDX:
-            reg_x_ = read_operand(mode, operand);
-            update_nz_flags(reg_x_);
+            op_ldx(mode, operand);
             break;
         case Operation::LDY:
             reg_y_ = read_operand(mode, operand);
             update_nz_flags(reg_y_);
             break;
         case Operation::LSR: {
-            const std::uint8_t val = read_operand(mode, operand);
-            set_flag(Carry, (val & 0x01) != 0);
-            const std::uint8_t result = static_cast<std::uint8_t>(val >> 1);
-            write_operand(mode, operand, result);
-            update_nz_flags(result);
+            op_lsr(mode, operand);
             break;
         };
         case Operation::NOP: {
@@ -349,8 +420,7 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             break;
         };
         case Operation::ORA:
-            reg_a_ |= read_operand(mode, operand);
-            update_nz_flags(reg_a_);
+            op_ora(mode, operand);
             break;
         case Operation::PHA:
             push(reg_a_);
@@ -368,21 +438,11 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             status_ |= Unused;
             break;
         case Operation::ROL: {
-            const std::uint8_t val = read_operand(mode, operand);
-            const bool old_carry = get_flag(Carry);
-            set_flag(Carry, (val & 0x80) != 0);
-            const std::uint8_t result = static_cast<std::uint8_t>((val << 1) | (old_carry ? 1 : 0));
-            write_operand(mode, operand, result);
-            update_nz_flags(result);
+            op_rol(mode, operand);
             break;
         }
         case Operation::ROR: {
-            const std::uint8_t val = read_operand(mode, operand);
-            const bool old_carry = get_flag(Carry);
-            set_flag(Carry, (val & 0x01) != 0);
-            const std::uint8_t result = static_cast<std::uint8_t>((val >> 1) | (old_carry ? 0x80 : 0));
-            write_operand(mode, operand, result);
-            update_nz_flags(result);
+            op_ror(mode, operand);
             break;
         }
         case Operation::RTI:
@@ -395,7 +455,7 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             pc_ = static_cast<std::uint16_t>(pop16() + 1);
             break;
         case Operation::SBC:
-            add_to_accumulator(read_operand(mode, operand) ^ 0xFF);
+            op_sbc(mode, operand);
             break;
         case Operation::SEC:
             set_flag(Carry, true);
@@ -438,7 +498,75 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             reg_a_ = reg_y_;
             update_nz_flags(reg_a_);
             break;
-        
+        case Operation::SLO: 
+            op_asl(mode, operand);
+            op_ora(mode, operand);
+            break;
+        case Operation::RLA: 
+            op_rol(mode, operand);
+            op_and(mode, operand);
+            break;
+        case Operation::SAX: {
+            std::uint8_t val = reg_a_ & reg_x_;
+            write_operand(mode, operand, val);
+            break;
+        }
+        case Operation::SRE:
+            op_lsr(mode, operand);
+            op_eor(mode, operand);
+            break;
+        case Operation::RRA: 
+            op_ror(mode, operand);
+            op_adc(mode, operand);
+            break;
+        case Operation::LAX: 
+            op_lda(mode, operand);
+            op_ldx(mode, operand);
+            break;
+        case Operation::DCP: 
+            op_dec(mode, operand);
+            op_cmp(mode, operand);
+            break;
+        case Operation::ISC:
+            op_inc(mode, operand);
+            op_sbc(mode, operand);
+            break;
+        case Operation::ANC:
+            reg_a_ &= read_operand(mode, operand);
+            set_flag(Carry, reg_a_ & 0x80);
+            update_nz_flags(reg_a_);
+            break;
+        case Operation::ASR:
+            reg_a_ &= read_operand(mode, operand);
+            set_flag(Carry, reg_a_ & 0x01);
+            reg_a_ >>= 1;
+            update_nz_flags(reg_a_);
+            break;
+        case Operation::ARR: {
+            reg_a_ &= read_operand(mode, operand);
+            bool old_carry = get_flag(Carry);
+            reg_a_ = (reg_a_ >> 1) | (old_carry << 7);
+            set_flag(Carry, reg_a_ & 0x40);
+            set_flag(Overflow, ((reg_a_ >> 6) ^ (reg_a_ >> 5)) & 1);
+            update_nz_flags(reg_a_);
+            break;
+        }
+        case Operation::ANE:
+            reg_a_ = reg_x_ & read_operand(mode, operand);
+            update_nz_flags(reg_a_);
+            break;
+        case Operation::LXA:
+            reg_a_ = read_operand(mode, operand);
+            reg_x_ = reg_a_;
+            update_nz_flags(reg_a_);
+            break;
+        case Operation::AXS: {
+            std::uint8_t val = read_operand(mode, operand);
+            std::uint8_t and_ax = (reg_a_ & reg_x_);
+            reg_x_ = static_cast<std::uint8_t>(and_ax - val);
+            compare_register(and_ax, val);
+            break;
+        }
         case Operation::Invalid: {
             //throw std::runtime_error("Attempted to execute invalid opcode");
         }

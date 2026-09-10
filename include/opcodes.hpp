@@ -25,7 +25,8 @@ enum class Operation : std::uint8_t {
     JSR,LDA,LDX,LDY,LSR,NOP,ORA,PHA,PHP,PLA,PLP,ROL,ROR,RTI,RTS,
     SBC,SEC,SED,SEI,STA,STX,STY,TAX,TAY,TSX,TXA,TXS,TYA,
 
-    SLO,RLA,SRE,RRA,SAX,LAX,DCP,ISC
+    SLO,RLA,SRE,RRA,SAX,LAX,DCP,ISC,SHA,SHS,SHY,SHX,LAE,
+    ANC,ASR,ARR,ANE,LXA,AXS
 };
 
 struct Opcode {
@@ -367,6 +368,24 @@ inline constexpr auto opcode_table = [] {
     set(0xFB, "ISC", Operation::ISC, AddressingMode::AbsoluteY, 3, 7);
     set(0xE3, "ISC", Operation::ISC, AddressingMode::IndexedIndirect, 2, 8);
     set(0xF3, "ISC", Operation::ISC, AddressingMode::IndirectIndexed, 2, 8);
+
+    set(0x9F, "SHA", Operation::SHA, AddressingMode::Absolute, 3, 5);
+    set(0x93, "SHA", Operation::SHA, AddressingMode::IndirectIndexed, 2, 6);
+
+    set(0x9E, "SHX", Operation::SHX, AddressingMode::AbsoluteY, 3, 5);
+
+    set(0x9C, "SHY", Operation::SHY, AddressingMode::AbsoluteX, 3, 5);
+
+    set(0xBB, "LAE", Operation::LAE, AddressingMode::AbsoluteX, 3, 5);
+
+    set(0x0b, "ANC", Operation::ANC, AddressingMode::Immediate, 2, 2);
+    set(0x2B, "ANC", Operation::ANC, AddressingMode::Immediate, 2, 2);
+    set(0x4B, "ASR", Operation::ASR, AddressingMode::Immediate, 2, 2);
+    set(0x6B, "ARR", Operation::ARR, AddressingMode::Immediate, 2, 2);
+    set(0x8B, "ANE", Operation::ANE, AddressingMode::Immediate, 2, 2);
+    set(0xAB, "LXA", Operation::LXA, AddressingMode::Immediate, 2, 2);
+    set(0xCB, "AXS", Operation::AXS, AddressingMode::Immediate, 2, 2);
+    set(0xEB, "SBC", Operation::SBC, AddressingMode::Immediate, 2, 2);
 
 
     return table;
