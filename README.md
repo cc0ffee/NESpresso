@@ -6,7 +6,7 @@ Emulation of the Nintendo Entertainment System (NES) implemented with C++ and SD
 
 Built from scratch to learn how the NES and emulation works, it implements the CPU, PPU, memory bus, and cartridge hardware with ongoing work to improve accuracy and compatibility.
 
-Currently there are 2 supported cartridge mappers:
+Currently there are 3 supported cartridge mappers:
 - **Mapper 0 (NROM)**
 - **Mapper 2 (UxROM)**
 - **Mapper 3 (CNROM)**

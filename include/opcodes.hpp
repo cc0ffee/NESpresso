@@ -23,7 +23,9 @@ enum class Operation : std::uint8_t {
     Invalid,ADC,AND,ASL,BCC,BCS,BEQ,BIT,BMI,BNE,BPL,BRK,BVC,BVS,
     CLC,CLD,CLI,CLV,CMP,CPX,CPY,DEC,DEX,DEY,EOR,HLT,INC,INX,INY,JMP,
     JSR,LDA,LDX,LDY,LSR,NOP,ORA,PHA,PHP,PLA,PLP,ROL,ROR,RTI,RTS,
-    SBC,SEC,SED,SEI,STA,STX,STY,TAX,TAY,TSX,TXA,TXS,TYA
+    SBC,SEC,SED,SEI,STA,STX,STY,TAX,TAY,TSX,TXA,TXS,TYA,
+
+    SLO,RLA,SRE,RRA,SAX,LAX,DCP,ISC
 };
 
 struct Opcode {
@@ -306,6 +308,65 @@ inline constexpr auto opcode_table = [] {
 
     // BELOW ARE UNOFFICAL OPCODES
 
+    set(0x07, "SLO", Operation::SLO, AddressingMode::ZeroPage, 2, 5);
+    set(0x17, "SLO", Operation::SLO, AddressingMode::ZeroPageX, 2, 6);
+    set(0x0F, "SLO", Operation::SLO, AddressingMode::Absolute, 3, 6);
+    set(0x1F, "SLO", Operation::SLO, AddressingMode::AbsoluteX, 3, 7);
+    set(0x1B, "SLO", Operation::SLO, AddressingMode::AbsoluteY, 3, 7);
+    set(0x03, "SLO", Operation::SLO, AddressingMode::IndexedIndirect, 2, 8);
+    set(0x13, "SLO", Operation::SLO, AddressingMode::IndirectIndexed, 2, 8);
+
+    set(0x27, "RLA", Operation::RLA, AddressingMode::ZeroPage, 2, 5);
+    set(0x37, "RLA", Operation::RLA, AddressingMode::ZeroPageX, 2, 6);
+    set(0x2F, "RLA", Operation::RLA, AddressingMode::Absolute, 3, 6);
+    set(0x3F, "RLA", Operation::RLA, AddressingMode::AbsoluteX, 3, 7);
+    set(0x3B, "RLA", Operation::RLA, AddressingMode::AbsoluteY, 3, 7);
+    set(0x23, "RLA", Operation::RLA, AddressingMode::IndexedIndirect, 2, 8);
+    set(0x33, "RLA", Operation::RLA, AddressingMode::IndirectIndexed, 2, 8);
+    
+    set(0x47, "SRE", Operation::SRE, AddressingMode::ZeroPage, 2, 5);
+    set(0x57, "SRE", Operation::SRE, AddressingMode::ZeroPageX, 2, 6);
+    set(0x4F, "SRE", Operation::SRE, AddressingMode::Absolute, 3, 6);
+    set(0x5F, "SRE", Operation::SRE, AddressingMode::AbsoluteX, 3, 7);
+    set(0x5B, "SRE", Operation::SRE, AddressingMode::AbsoluteY, 3, 7);
+    set(0x43, "SRE", Operation::SRE, AddressingMode::IndexedIndirect, 2, 8);
+    set(0x53, "SRE", Operation::SRE, AddressingMode::IndirectIndexed, 2, 8);
+
+    set(0x67, "RRA", Operation::RRA, AddressingMode::ZeroPage, 2, 5);
+    set(0x77, "RRA", Operation::RRA, AddressingMode::ZeroPageX, 2, 6);
+    set(0x6F, "RRA", Operation::RRA, AddressingMode::Absolute, 3, 6);
+    set(0x7F, "RRA", Operation::RRA, AddressingMode::AbsoluteX, 3, 7);
+    set(0x7B, "RRA", Operation::RRA, AddressingMode::AbsoluteY, 3, 7);
+    set(0x63, "RRA", Operation::RRA, AddressingMode::IndexedIndirect, 2, 8);
+    set(0x73, "RRA", Operation::RRA, AddressingMode::IndirectIndexed, 2, 8);
+
+    set(0x87, "SAX", Operation::SAX, AddressingMode::ZeroPage, 2, 3);
+    set(0x97, "SAX", Operation::SAX, AddressingMode::ZeroPageY, 2, 4);
+    set(0x8F, "SAX", Operation::SAX, AddressingMode::Absolute, 3, 4);
+    set(0x83, "SAX", Operation::SAX, AddressingMode::IndexedIndirect, 2, 6);
+
+    set(0xA7, "LAX", Operation::LAX, AddressingMode::ZeroPage, 2, 3);
+    set(0xB7, "LAX", Operation::LAX, AddressingMode::ZeroPageY, 2, 4);
+    set(0xAF, "LAX", Operation::LAX, AddressingMode::Absolute, 3, 4);
+    set(0xBF, "LAX", Operation::LAX, AddressingMode::AbsoluteY, 3, 4);
+    set(0xA3, "LAX", Operation::LAX, AddressingMode::IndexedIndirect, 2, 6);
+    set(0xB3, "LAX", Operation::LAX, AddressingMode::IndirectIndexed, 2, 5);
+    
+    set(0xC7, "DCP", Operation::DCP, AddressingMode::ZeroPage, 2, 5);
+    set(0xD7, "DCP", Operation::DCP, AddressingMode::ZeroPageX, 2, 6);
+    set(0xCF, "DCP", Operation::DCP, AddressingMode::Absolute, 3, 6);
+    set(0xDF, "DCP", Operation::DCP, AddressingMode::AbsoluteX, 3, 7);
+    set(0xDB, "DCP", Operation::DCP, AddressingMode::AbsoluteY, 3, 7);
+    set(0xC3, "DCP", Operation::DCP, AddressingMode::IndexedIndirect, 2, 8);
+    set(0xD3, "DCP", Operation::DCP, AddressingMode::IndirectIndexed, 2, 8);
+
+    set(0xE7, "ISC", Operation::ISC, AddressingMode::ZeroPage, 2, 5);
+    set(0xF7, "ISC", Operation::ISC, AddressingMode::ZeroPageX, 2, 6);
+    set(0xEF, "ISC", Operation::ISC, AddressingMode::Absolute, 3, 6);
+    set(0xFF, "ISC", Operation::ISC, AddressingMode::AbsoluteX, 3, 7);
+    set(0xFB, "ISC", Operation::ISC, AddressingMode::AbsoluteY, 3, 7);
+    set(0xE3, "ISC", Operation::ISC, AddressingMode::IndexedIndirect, 2, 8);
+    set(0xF3, "ISC", Operation::ISC, AddressingMode::IndirectIndexed, 2, 8);
 
 
     return table;

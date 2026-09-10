@@ -55,6 +55,21 @@ private:
     void write_operand(AddressingMode mode, const AddressResult& operand, std::uint8_t val);
     void execute(Operation opcode, AddressingMode mode, const AddressResult& operand, std::uint8_t& cycles);
 
+    void op_asl(AddressingMode mode, const AddressResult& operand);
+    void op_ora(AddressingMode mode, const AddressResult& operand);
+    void op_rol(AddressingMode mode, const AddressResult& operand);
+    void op_and(AddressingMode mode, const AddressResult& operand);
+    void op_adc(AddressingMode mode, const AddressResult& operand);
+    void op_cmp(AddressingMode mode, const AddressResult& operand);
+    void op_dec(AddressingMode mode, const AddressResult& operand);
+    void op_eor(AddressingMode mode, const AddressResult& operand);
+    void op_lda(AddressingMode mode, const AddressResult& operand);
+    void op_ldx(AddressingMode mode, const AddressResult& operand);
+    void op_lsr(AddressingMode mode, const AddressResult& operand);
+    void op_ror(AddressingMode mode, const AddressResult& operand);
+    void op_inc(AddressingMode mode, const AddressResult& operand);
+    void op_sbc(AddressingMode mode, const AddressResult& operand);
+
     std::uint8_t reg_a_{0};
     std::uint8_t reg_x_{0};
     std::uint8_t reg_y_{0};
