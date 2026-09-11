@@ -88,9 +88,13 @@ void CPU::branch(bool condition, const AddressResult& operand, std::uint8_t& cyc
         return;
     }
 
+    bus_.cpu_memRead(pc_);
+
     ++cycles;
 
     if (operand.page_crossed) {
+        const std::uint16_t dummy_address = (pc_ & 0xFF00) | (operand.address & 0x00FF);
+        bus_.cpu_memRead(dummy_address);
         ++cycles;
     }
 
@@ -134,6 +138,7 @@ CPU::AddressResult CPU::resolve_address(AddressingMode mode) {
             const std::uint16_t base = read_16_from_pc();
             const std::uint16_t address = static_cast<uint16_t>(base + reg_x_);
             const bool page_crossed = (base & 0xFF00) != (address & 0xFF00);
+            
             if (page_crossed) {
                 const std::uint16_t dummy_address = (base & 0xFF00) | (address & 0x00FF);
                 bus_.cpu_memRead(dummy_address);
@@ -417,10 +422,20 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
         case Operation::JMP:
             pc_ = operand.address;
             break;
-        case Operation::JSR:
-            push16(static_cast<std::uint16_t>(pc_ - 1));
-            pc_ = operand.address;
+        case Operation::JSR: {
+            // while doing the open bus test, seemed like the JSR was the issue, so I directly copied the bus sequence and it worked so
+            const std::uint16_t target = operand.address;
+            bus_.cpu_memRead(static_cast<std::uint16_t>(0x0100 | sp_));
+
+            push(static_cast<std::uint8_t>((pc_ - 1) >> 8));
+            push(static_cast<std::uint8_t>(pc_ - 1));
+
+            const std::uint8_t high = bus_.cpu_memRead(static_cast<std::uint16_t>(pc_ - 1));
+
+            pc_ = static_cast<std::uint16_t>(target & 0x00FF) | (static_cast<std::uint16_t>(high) << 8);
+
             break;
+        }
         case Operation::LDA:
             op_lda(mode, operand);
             break;

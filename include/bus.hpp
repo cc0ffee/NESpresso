@@ -13,7 +13,7 @@ public:
     bool calc_nmi_vblank();
     std::uint8_t controller1_buttons_{0};
     std::uint8_t controller2_buttons_{0};
-
+    std::uint8_t open_bus_{};
 private:
     Cartridge& cartridge_;
     PPU& ppu_;
