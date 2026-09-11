@@ -133,12 +133,22 @@ CPU::AddressResult CPU::resolve_address(AddressingMode mode) {
         case AddressingMode::AbsoluteX: {
             const std::uint16_t base = read_16_from_pc();
             const std::uint16_t address = static_cast<uint16_t>(base + reg_x_);
-            return {address, (base & 0xFF00) != (address & 0xFF00)};
+            const bool page_crossed = (base & 0xFF00) != (address & 0xFF00);
+            if (page_crossed) {
+                const std::uint16_t dummy_address = (base & 0xFF00) | (address & 0x00FF);
+                bus_.cpu_memRead(dummy_address);
+            }
+            return {address, page_crossed};
         };
         case AddressingMode::AbsoluteY: {
             const std::uint16_t base = read_16_from_pc();
             const std::uint16_t address = static_cast<uint16_t>(base + reg_y_);
-            return {address, (base & 0xFF00) != (address & 0xFF00)};
+            const bool page_crossed = (base & 0xFF00) != (address & 0xFF00);
+            if (page_crossed) {
+                const std::uint16_t dummy_address = (base & 0xFF00) | (address & 0x00FF);
+                bus_.cpu_memRead(dummy_address);
+            }
+            return {address, page_crossed};
         };
         case AddressingMode::Indirect: {
             const std::uint16_t ptr = read_16_from_pc();
@@ -164,7 +174,12 @@ CPU::AddressResult CPU::resolve_address(AddressingMode mode) {
             const std::uint8_t high = bus_.cpu_memRead(next_ptr);
             const std::uint16_t base = static_cast<std::uint16_t>(low) | (static_cast<std::uint16_t>(high) << 8);
             const std::uint16_t address = static_cast<std::uint16_t>(base + reg_y_);
-            return {address, (base & 0xFF00) != (address & 0xFF00)};
+            const bool page_crossed = (base & 0xFF00) != (address & 0xFF00);
+            if (page_crossed) {
+                const std::uint16_t dummy_address = (base & 0xFF00) | (address & 0x00FF);
+                bus_.cpu_memRead(dummy_address);
+            }
+            return {address, page_crossed};
         }
     }
 
@@ -467,6 +482,10 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             set_flag(InterruptDisable, true);
             break;
         case Operation::STA:
+            if (mode == AddressingMode::AbsoluteX) {
+                const std::uint16_t dummy = (operand.address & 0xFF00) | static_cast<std::uint8_t>(operand.address - reg_x_);
+                bus_.cpu_memRead(dummy);
+            }
             write_operand(mode, operand, reg_a_);
             break;
         case Operation::STX:
