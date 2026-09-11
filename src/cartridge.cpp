@@ -1,7 +1,7 @@
 #include "cartridge.hpp"
 #include <iostream>
-#include <string>
 #include "mappers/mapper0.hpp"
+#include "mappers/mapper1.hpp"
 #include "mappers/mapper2.hpp"
 #include "mappers/mapper3.hpp"
 
@@ -51,6 +51,9 @@ Cartridge::Cartridge(std::ifstream& rom) {
         case 0:
             mapper_ = std::make_unique<Mapper0>(prg_banks, chr_banks);
             break;
+        case 1:
+            mapper_ = std::make_unique<Mapper1>(*this, prg_banks, chr_banks);
+            break;
         case 2:
             mapper_ = std::make_unique<Mapper2>(prg_banks, chr_banks);
             break;
@@ -80,8 +83,6 @@ Cartridge::Cartridge(std::ifstream& rom) {
         chr_memory_.resize(8 * 1024);
         uses_chr_ram_ = true;
     }
-
-    std::cout << static_cast<int>(mapper_id_) << std::endl;
 
 }
 

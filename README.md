@@ -6,8 +6,9 @@ Emulation of the Nintendo Entertainment System (NES) implemented with C++ and SD
 
 Built from scratch to learn how the NES and emulation works, it implements the CPU, PPU, memory bus, and cartridge hardware with ongoing work to improve accuracy and compatibility.
 
-Currently there are 3 supported cartridge mappers:
+Currently there are 4 supported cartridge mappers:
 - **Mapper 0 (NROM)**
+- **Mapper 1 (MMC1/SxROM)**
 - **Mapper 2 (UxROM)**
 - **Mapper 3 (CNROM)**
 
@@ -63,6 +64,24 @@ Pass the path to a NES ROM as the first argument:
 ```bash
 ./build/nes path/to/rom.nes
 ```
+
+### Screenshots
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://i.imgur.com/uyqT1dK.png" width="97%"/>
+      <br>
+      <sub>AccuracyCoin Test Results</sub>
+    </td>
+    <td width="2"></td>
+    <td align="center">
+      <img src="https://i.imgur.com/3BviZk7.png" width="100%"/>
+      <br>
+      <sub>Tetris (using Mapper 1 - MMC1 - SxROM)</sub>
+    </td>
+  </tr>
+</table>
 
 ### Acknowledgments
 - [NESDev Wiki Reference](https://www.nesdev.org/wiki/NES_reference_guide)

@@ -369,14 +369,16 @@ inline constexpr auto opcode_table = [] {
     set(0xE3, "ISC", Operation::ISC, AddressingMode::IndexedIndirect, 2, 8);
     set(0xF3, "ISC", Operation::ISC, AddressingMode::IndirectIndexed, 2, 8);
 
-    set(0x9F, "SHA", Operation::SHA, AddressingMode::Absolute, 3, 5);
+    set(0x9F, "SHA", Operation::SHA, AddressingMode::AbsoluteY, 3, 5);
     set(0x93, "SHA", Operation::SHA, AddressingMode::IndirectIndexed, 2, 6);
 
     set(0x9E, "SHX", Operation::SHX, AddressingMode::AbsoluteY, 3, 5);
 
+    set(0x9B, "SHS", Operation::SHS, AddressingMode::AbsoluteY, 3, 5);
+
     set(0x9C, "SHY", Operation::SHY, AddressingMode::AbsoluteX, 3, 5);
 
-    set(0xBB, "LAE", Operation::LAE, AddressingMode::AbsoluteX, 3, 5);
+    set(0xBB, "LAE", Operation::LAE, AddressingMode::AbsoluteY, 3, 4);
 
     set(0x0b, "ANC", Operation::ANC, AddressingMode::Immediate, 2, 2);
     set(0x2B, "ANC", Operation::ANC, AddressingMode::Immediate, 2, 2);

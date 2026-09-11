@@ -50,10 +50,22 @@ void PPU::ppu_writeReg(std::uint16_t addr, std::uint8_t val) {
                 }
             } else if (vram_addr < 0x3F00) {
 
-                if (cartridge_.mirroring_ == NameTableMirroring::Horizontal) {
-                    nametable_ram_[(vram_addr & 0x03FF) | (vram_addr & 0x0800) >> 1] = val;
-                } else {
-                    nametable_ram_[(vram_addr & 0x07FF)] = val;
+               switch (cartridge_.mirroring_) {
+                    case NameTableMirroring::Horizontal:
+                        nametable_ram_[(vram_addr & 0x03FF) | ((vram_addr & 0x0800) >> 1)] = val;
+                        break;
+                    case NameTableMirroring::Vertical:
+                        nametable_ram_[vram_addr & 0x07FF] = val;
+                        break;
+                    case NameTableMirroring::SingleScreenLower:
+                        nametable_ram_[vram_addr & 0x03FF] = val;
+                        break;
+                    case NameTableMirroring::SingleScreenUpper:
+                        nametable_ram_[0x400 + (vram_addr & 0x03FF)] = val;
+                        break;
+                    case NameTableMirroring::FourScreen:
+                        nametable_ram_[vram_addr & 0x07FF] = val;
+                        break;
                 }
 
             } else {
@@ -99,10 +111,22 @@ std::uint8_t PPU::ppu_read(uint16_t addr) {
                 ppu_read_buffer_ = cartridge_.ppu_memRead(vram_addr);
             } else if (vram_addr < 0x3F00) {
                 val = ppu_read_buffer_;
-                if (cartridge_.mirroring_ == NameTableMirroring::Horizontal) {
-                    ppu_read_buffer_ = nametable_ram_[(vram_addr & 0x03FF) | (vram_addr & 0x0800) >> 1];
-                } else {
-                    ppu_read_buffer_ = nametable_ram_[(vram_addr & 0x07FF)];
+                switch (cartridge_.mirroring_) {
+                    case NameTableMirroring::Horizontal:
+                        ppu_read_buffer_ = nametable_ram_[(vram_addr & 0x03FF) | ((vram_addr & 0x0800) >> 1)];
+                        break;
+                    case NameTableMirroring::Vertical:
+                        ppu_read_buffer_ = nametable_ram_[vram_addr & 0x07FF];
+                        break;
+                    case NameTableMirroring::SingleScreenLower:
+                        ppu_read_buffer_ = nametable_ram_[vram_addr & 0x03FF];
+                        break;
+                    case NameTableMirroring::SingleScreenUpper:
+                        ppu_read_buffer_ = nametable_ram_[0x400 + (vram_addr & 0x03FF)];
+                        break;
+                    case NameTableMirroring::FourScreen:
+                        ppu_read_buffer_ = nametable_ram_[vram_addr & 0x07FF];
+                        break;
                 }
 
             } else {
@@ -145,15 +169,18 @@ std::uint8_t PPU::ppu_directRead(std::uint16_t addr) {
     }
 
     if (vram_addr < 0x3F00) {
-        if (cartridge_.mirroring_ == NameTableMirroring::Horizontal) {
-
-            const std::uint16_t index =
-                (vram_addr & 0x03FF) | ((vram_addr & 0x0800) >> 1);
-
-            return nametable_ram_[index];
+        switch (cartridge_.mirroring_) {
+            case NameTableMirroring::Horizontal:
+                return nametable_ram_[(vram_addr & 0x03FF) |((vram_addr & 0x0800) >> 1)];
+            case NameTableMirroring::Vertical:
+                return nametable_ram_[vram_addr & 0x07FF];
+            case NameTableMirroring::SingleScreenLower:
+                return nametable_ram_[vram_addr & 0x03FF];
+            case NameTableMirroring::SingleScreenUpper:
+                return nametable_ram_[0x400 + (vram_addr & 0x03FF)];
+            case NameTableMirroring::FourScreen:
+                return nametable_ram_[vram_addr & 0x07FF];
         }
-
-        return nametable_ram_[vram_addr & 0x07FF];
     }
 
     if ((vram_addr & 0x03) == 0) {
@@ -204,7 +231,7 @@ void PPU::step() {
     if ((ppuScanline < 240) || ppuScanline == 261) {
         if ((ppuDot > 0 && ppuDot <= 256) || (ppuDot > 320 && ppuDot <= 336)) {
             if (mask_ & 0x18) {
-                if (mask_ & 0x08) {
+                if ((mask_ & 0x18) != 0) {
                     bg_pattern_low_shift_ <<= 1;
                     bg_pattern_high_shift_ <<= 1;
                     bg_attribute_low_shift_ <<= 1;

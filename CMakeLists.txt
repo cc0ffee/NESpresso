@@ -15,6 +15,7 @@ add_executable(nes
     src/cpu.cpp
     src/ppu.cpp
     src/mappers/mapper0.cpp
+    src/mappers/mapper1.cpp
     src/mappers/mapper2.cpp
     src/mappers/mapper3.cpp
 )
@@ -24,8 +25,8 @@ target_compile_features(nes PRIVATE cxx_std_20)
 set_target_properties(nes PROPERTIES CXX_EXTENSIONS OFF)
 
 target_link_libraries(nes PRIVATE
-    SDL2::SDL2
     $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+    SDL2::SDL2
 )
 
 if(MSVC)
