@@ -567,6 +567,14 @@ void CPU::execute(Operation opcode, AddressingMode mode, const AddressResult& op
             compare_register(and_ax, val);
             break;
         }
+        case Operation::LAE: {
+            const std::uint8_t val = read_operand(mode, operand) & sp_;
+            reg_a_ = val;
+            reg_x_ = val;
+            sp_ = val;
+            update_nz_flags(val);
+            break;
+        }
         case Operation::Invalid: {
             //throw std::runtime_error("Attempted to execute invalid opcode");
         }
