@@ -82,6 +82,8 @@ private:
     std::uint16_t reg_t_{};
     bool reg_w_{false};
 
+    std::uint32_t open_bus_decay_{0};
+
     void incScrollY();
     void resetXScroll();
     void resetYScroll();

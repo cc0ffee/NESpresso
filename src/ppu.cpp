@@ -5,6 +5,7 @@ PPU::PPU(Cartridge& cartridge) : cartridge_(cartridge) {}
 
 void PPU::ppu_writeReg(std::uint16_t addr, std::uint8_t val) {
     open_bus_ = val;
+    open_bus_decay_ = 0;
     switch(addr) {
         case 0x2000:
             ctrl_ = val; 
@@ -83,6 +84,7 @@ std::uint8_t PPU::ppu_read(uint16_t addr) {
             reg_w_ = false;
 
             open_bus_ = val;
+            open_bus_decay_ = 0;
             return val;
         }
         case 0x2004: {
@@ -109,10 +111,24 @@ std::uint8_t PPU::ppu_read(uint16_t addr) {
                 } else {
                     val = palette_ram_[vram_addr & 0x1F];
                 }
+
+                val &= 0x3F;
+                if (mask_ & 0x01) {
+                    val &= 0x30;
+                }
+                val |= (open_bus_ & 0xC0);
+
+                const std::uint16_t buffer_addr = static_cast<std::uint16_t>(vram_addr & 0x2FFF);
+                if (cartridge_.mirroring_ == NameTableMirroring::Horizontal) {
+                    ppu_read_buffer_ = nametable_ram_[(buffer_addr & 0x03FF) | ((buffer_addr & 0x0800) >> 1)];
+                } else {
+                    ppu_read_buffer_ = nametable_ram_[(buffer_addr & 0x07FF)];
+                }
             }
             reg_v_ += (ctrl_ & 0x04) ? 32 : 1;
             reg_v_ &= 0x3FFF;
             open_bus_ = val;
+            open_bus_decay_ = 0;
             return val;
         }
         default:
@@ -149,6 +165,13 @@ std::uint8_t PPU::ppu_directRead(std::uint16_t addr) {
 
 
 void PPU::step() {
+    ++open_bus_decay_;
+
+    if (open_bus_decay_ >= 5369318) {
+        open_bus_ = 0;
+        open_bus_decay_ = 0;
+    }
+
     ++ppuDot;
 
     if (ppuDot >= 341) {
