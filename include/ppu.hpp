@@ -76,6 +76,8 @@ private:
 
     std::uint8_t ppu_scroll_fine_x_{};
 
+    std::uint8_t open_bus_{0};
+
     std::uint16_t reg_v_{};
     std::uint16_t reg_t_{};
     bool reg_w_{false};

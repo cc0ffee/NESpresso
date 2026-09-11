@@ -4,6 +4,7 @@
 PPU::PPU(Cartridge& cartridge) : cartridge_(cartridge) {}
 
 void PPU::ppu_writeReg(std::uint16_t addr, std::uint8_t val) {
+    open_bus_ = val;
     switch(addr) {
         case 0x2000:
             ctrl_ = val; 
@@ -71,30 +72,31 @@ void PPU::ppu_writeReg(std::uint16_t addr, std::uint8_t val) {
 std::uint8_t PPU::ppu_read(uint16_t addr) {
     switch(addr) {
         case 0x2000:
-            break;
         case 0x2001:
-            break;
+        case 0x2003:
+        case 0x2005:
+        case 0x2006:
+            return open_bus_;
         case 0x2002: {
-            std::uint8_t result = status_ & 0xE0;
+            std::uint8_t val = (status_ & 0xE0) | (open_bus_ & 0x1F);
             status_ &= static_cast<std::uint8_t>(~0x80);
             reg_w_ = false;
-            return result;
+
+            open_bus_ = val;
+            return val;
         }
-        case 0x2003:
-            break;
-        case 0x2004:
-            break;
-        case 0x2005:
-            break;
-        case 0x2006:
-            break;
+        case 0x2004: {
+            open_bus_ = oam_data_[oam_addr_ & 0xFF];
+            return open_bus_;
+        }
         case 0x2007: {
             const std::uint16_t vram_addr = reg_v_ & 0x3FFF;
-            uint8_t temp = ppu_read_buffer_;
+            std::uint8_t val;
             if (vram_addr < 0x2000) {
+                val = ppu_read_buffer_;
                 ppu_read_buffer_ = cartridge_.ppu_memRead(vram_addr);
             } else if (vram_addr < 0x3F00) {
-
+                val = ppu_read_buffer_;
                 if (cartridge_.mirroring_ == NameTableMirroring::Horizontal) {
                     ppu_read_buffer_ = nametable_ram_[(vram_addr & 0x03FF) | (vram_addr & 0x0800) >> 1];
                 } else {
@@ -103,17 +105,20 @@ std::uint8_t PPU::ppu_read(uint16_t addr) {
 
             } else {
                 if ((vram_addr & 0x3) == 0) {
-                    temp = palette_ram_[vram_addr & 0x0F];
+                    val = palette_ram_[vram_addr & 0x0F];
                 } else {
-                    temp = palette_ram_[vram_addr & 0x1F];
+                    val = palette_ram_[vram_addr & 0x1F];
                 }
             }
             reg_v_ += (ctrl_ & 0x04) ? 32 : 1;
             reg_v_ &= 0x3FFF;
-            return temp;
+            open_bus_ = val;
+            return val;
         }
+        default:
+            return open_bus_;
     }
-    return 0;
+    return open_bus_;
 }
 
 std::uint8_t PPU::ppu_directRead(std::uint16_t addr) {

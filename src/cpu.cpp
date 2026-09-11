@@ -207,6 +207,7 @@ void CPU::write_operand(AddressingMode mode, const AddressResult& operand, std::
 
 void CPU::op_asl(AddressingMode mode, const AddressResult& operand) {
     const std::uint8_t val = read_operand(mode, operand);
+    write_operand(mode, operand, val);
     set_flag(Carry, (val & 0x80) != 0);
     const std::uint8_t result = static_cast<std::uint8_t>(val << 1);
     write_operand(mode, operand, result);
@@ -220,6 +221,7 @@ void CPU::op_ora(AddressingMode mode, const AddressResult& operand) {
 
 void CPU::op_rol(AddressingMode mode, const AddressResult& operand) {
     const std::uint8_t val = read_operand(mode, operand);
+    write_operand(mode, operand, val);
     const bool old_carry = get_flag(Carry);
     set_flag(Carry, (val & 0x80) != 0);
     const std::uint8_t result = static_cast<std::uint8_t>((val << 1) | (old_carry ? 1 : 0));
@@ -241,8 +243,10 @@ void CPU::op_cmp(AddressingMode mode, const AddressResult& operand) {
 }
 
 void CPU::op_dec(AddressingMode mode, const AddressResult& operand) {
-    const std::uint8_t result = static_cast<std::uint8_t>(read_operand(mode, operand) - 1);
-    write_operand(mode , operand, result);
+    const std::uint8_t val = read_operand(mode, operand);
+    write_operand(mode, operand, val);
+    const std::uint8_t result = static_cast<std::uint8_t>(val - 1);
+    write_operand(mode, operand, result);
     update_nz_flags(result);
 }
 
@@ -266,6 +270,7 @@ void CPU::op_lsr(AddressingMode mode, const AddressResult& operand) {
     const std::uint8_t val = read_operand(mode, operand);
     set_flag(Carry, (val & 0x01) != 0);
     const std::uint8_t result = static_cast<std::uint8_t>(val >> 1);
+    write_operand(mode, operand, val);
     write_operand(mode, operand, result);
     update_nz_flags(result);
 }
@@ -273,6 +278,7 @@ void CPU::op_lsr(AddressingMode mode, const AddressResult& operand) {
 
 void CPU::op_ror(AddressingMode mode, const AddressResult& operand) {
     const std::uint8_t val = read_operand(mode, operand);
+    write_operand(mode, operand, val);
     const bool old_carry = get_flag(Carry);
     set_flag(Carry, (val & 0x01) != 0);
     const std::uint8_t result = static_cast<std::uint8_t>((val >> 1) | (old_carry ? 0x80 : 0));
@@ -282,11 +288,12 @@ void CPU::op_ror(AddressingMode mode, const AddressResult& operand) {
 
 
 void CPU::op_inc(AddressingMode mode, const AddressResult& operand) {
-    const std::uint8_t result = static_cast<std::uint8_t>(read_operand(mode, operand) + 1);
+    const std::uint8_t val = read_operand(mode, operand);
+    write_operand(mode, operand, val);
+    const std::uint8_t result = static_cast<std::uint8_t>(val + 1);
     write_operand(mode, operand, result);
     update_nz_flags(result);
 }
-
 void CPU::op_sbc(AddressingMode mode, const AddressResult& operand) {
     add_to_accumulator(read_operand(mode, operand) ^ 0xFF);
 }
