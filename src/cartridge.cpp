@@ -1,5 +1,7 @@
 #include "cartridge.hpp"
 #include <iostream>
+#include <string>
+#include <stdexcept>
 #include "mappers/mapper0.hpp"
 #include "mappers/mapper1.hpp"
 #include "mappers/mapper2.hpp"

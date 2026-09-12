@@ -1,15 +1,53 @@
+#define SDL_MAIN_HANDLED
+
 #include "bus.hpp"
 #include "cartridge.hpp"
 #include "cpu.hpp"
-#include <fstream>
-#include <iostream>
-#include <SDL2/SDL.h>
-#include <array>
-#include <cstdint>
-#include <vector>
-#include <chrono>
-#include <thread>
+#include "ppu.hpp"
+#include "opcodes.hpp"
 
+#include <SDL2/SDL.h>
+
+#include "imgui.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
+
+#include <nfd.hpp>
+
+#include <array>
+#include <chrono>
+#include <cstdint>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
+#include <memory>
+
+static bool load_rom(const std::string& path, std::unique_ptr<std::ifstream>& rom_file, std::unique_ptr<Cartridge>& cartridge, std::unique_ptr<PPU>& ppu, std::unique_ptr<Bus>& bus, std::unique_ptr<CPU>& cpu) {
+    auto new_rom_file = std::make_unique<std::ifstream>(path, std::ios::binary);
+
+    if (!*new_rom_file) {
+        return false;
+    }
+
+    auto new_cartridge = std::make_unique<Cartridge>(*new_rom_file);
+    auto new_ppu = std::make_unique<PPU>(*new_cartridge);
+    auto new_bus = std::make_unique<Bus>(*new_cartridge, *new_ppu);
+    auto new_cpu = std::make_unique<CPU>(*new_bus);
+
+    new_cpu->reset();
+
+    rom_file = std::move(new_rom_file);
+    cartridge = std::move(new_cartridge);
+    ppu = std::move(new_ppu);
+    bus = std::move(new_bus);
+    cpu = std::move(new_cpu);
+
+    return true;
+}
 
 struct Color {
     std::uint8_t red;
@@ -51,40 +89,36 @@ std::vector<std::uint32_t> make_screen_bitmap(const PPU& ppu) {
     return pixels;
 }
 
-int main(int argc, char *argv[]) {
-
-    if (argc < 2) {
-        std::cerr << "No ROM inputed! Usage: nes [rom_location]\n";
-        return 1;
-    }
-
-    std::ifstream rom_file{ argv[1], std::ios::binary };
-
-    if (!rom_file) {
-        std::cerr << "Failed to open ROM: " << argv[1] << "\n";
-        return 1;
-    }
+int main() {
 
     for (int j = 0; j < 64; ++j) {
-        Palette[j] = Color{Pal[j * 3], Pal[j * 3 + 1], Pal[j * 3 + 2]
-    };
-}
+        Palette[j] = Color{Pal[j * 3], Pal[j * 3 + 1], Pal[j * 3 + 2]};
+    }
 
-    Cartridge cartridge(rom_file);
-    PPU ppu(cartridge);
-    Bus bus(cartridge, ppu);
-    CPU cpu(bus);
+    std::unique_ptr<std::ifstream> rom_file;
+    std::unique_ptr<Cartridge> cartridge;
+    std::unique_ptr<PPU> ppu;
+    std::unique_ptr<Bus> bus;
+    std::unique_ptr<CPU> cpu;
 
-    cpu.reset();
 
     SDL_Init(SDL_INIT_VIDEO);
+    NFD::Guard nfdGuard;
     SDL_Window* window_ = SDL_CreateWindow("NES Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, bitmap_width * 3, bitmap_height * 3, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
     SDL_Texture* texture_ = SDL_CreateTexture(renderer_, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, bitmap_width, bitmap_height);
     SDL_SetTextureScaleMode(texture_, SDL_ScaleModeNearest);
 
+    IMGUI_CHECKVERSION();
 
-    auto pixels = make_screen_bitmap(ppu);
+    ImGui::CreateContext();
+    ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = false;
+
+    ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
+    ImGui_ImplSDLRenderer2_Init(renderer_);
+
+
+    std::vector<std::uint32_t> pixels(bitmap_width * bitmap_height,0xFF000000);
     bool running = true;
 
     std::uint64_t frame_count = 0;
@@ -95,64 +129,97 @@ int main(int argc, char *argv[]) {
     while (running) {
         SDL_Event event;
 
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
+        while (SDL_PollEvent(&event))
+        {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+
+            if (event.type == SDL_QUIT)
+                running = false;
+        }
+
+        ImGui_ImplSDLRenderer2_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::BeginMainMenuBar();
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Open ROM")) {
+                NFD::UniquePath outPath;
+                nfdfilteritem_t filters[] = { "NES ROM", "nes" };
+                nfdresult_t result = NFD::OpenDialog(outPath, filters, 1);
+                if (result == NFD_OKAY) {
+                    if (!load_rom(std::string(outPath.get()), rom_file, cartridge, ppu, bus, cpu)) {
+                        std::cerr << "Failed to load ROM\n";
+                    }
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Exit")) {
                 running = false;
             }
+            ImGui::EndMenu();
         }
+        ImGui::EndMainMenuBar();
 
-        const Uint8* keys = SDL_GetKeyboardState(nullptr);
-        bus.controller1_buttons_ = 0;
-        if (keys[SDL_SCANCODE_Z]) {
-            bus.controller1_buttons_ |= 0x01;
-        }
-        if (keys[SDL_SCANCODE_X]) {
-            bus.controller1_buttons_ |= 0x02;
-        }
-        if (keys[SDL_SCANCODE_RSHIFT]) {
-            bus.controller1_buttons_ |= 0x04;
-        }
-        if (keys[SDL_SCANCODE_RETURN]) {
-            bus.controller1_buttons_ |= 0x08;
-        }
-        if (keys[SDL_SCANCODE_UP]) {
-            bus.controller1_buttons_ |= 0x10;
-        }
-        if (keys[SDL_SCANCODE_DOWN]) {
-            bus.controller1_buttons_ |= 0x20;
-        }
-        if (keys[SDL_SCANCODE_LEFT]) {
-            bus.controller1_buttons_ |= 0x40;
-        }
-        if (keys[SDL_SCANCODE_RIGHT]) {
-            bus.controller1_buttons_ |= 0x80;
-        }
+        if (bus && ppu && cpu) {
+            const Uint8* keys = SDL_GetKeyboardState(nullptr);
 
-        if (!running) {
-            break;
-        }
+            bus->controller1_buttons_ = 0;
 
-        while (!ppu.frame_ready_ && !cpu.cpu_halt_) {
-            const int cpu_cycles = cpu.step();
-
-            for (int i = 0; i < cpu_cycles * 3; ++i) {
-                ppu.step();
+            if (keys[SDL_SCANCODE_Z]) {
+                bus->controller1_buttons_ |= 0x01;
             }
+            if (keys[SDL_SCANCODE_X]) {
+                bus->controller1_buttons_ |= 0x02;
+            }
+            if (keys[SDL_SCANCODE_RSHIFT]) {
+                bus->controller1_buttons_ |= 0x04;
+            }
+            if (keys[SDL_SCANCODE_RETURN]) {
+                bus->controller1_buttons_ |= 0x08;
+            }
+            if (keys[SDL_SCANCODE_UP]) {
+                bus->controller1_buttons_ |= 0x10;
+            }
+            if (keys[SDL_SCANCODE_DOWN]) {
+                bus->controller1_buttons_ |= 0x20;
+            }
+            if (keys[SDL_SCANCODE_LEFT]) {
+                bus->controller1_buttons_ |= 0x40;
+            }
+            if (keys[SDL_SCANCODE_RIGHT]) {
+                bus->controller1_buttons_ |= 0x80;
+            }
+
+            if (!running) {
+                break;
+            }
+
+            while (!ppu->frame_ready_ && !cpu->cpu_halt_) {
+                const int cpu_cycles = cpu->step();
+
+                for (int i = 0; i < cpu_cycles * 3; ++i) {
+                    ppu->step();
+                }
+            }
+
+            if (!ppu->frame_ready_) {
+                continue;
+            }
+
+            ppu->frame_ready_ = false;
+            ++frame_count;
+
+            pixels = make_screen_bitmap(*ppu);
         }
-
-        if (!ppu.frame_ready_) {
-            continue;
-        }
-
-        ppu.frame_ready_ = false;
-        ++frame_count;
-
-        pixels = make_screen_bitmap(ppu);
-
         SDL_UpdateTexture(texture_, nullptr, pixels.data(), bitmap_width * sizeof(std::uint32_t));
 
         SDL_RenderClear(renderer_);
         SDL_RenderCopy(renderer_, texture_, nullptr, nullptr);
+
+        ImGui::Render();
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer_);
+
         SDL_RenderPresent(renderer_);
         next_frame += frame_duration;
         std::this_thread::sleep_until(next_frame);
@@ -162,11 +229,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    ImGui_ImplSDLRenderer2_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
     SDL_DestroyTexture(texture_);
     SDL_DestroyRenderer(renderer_);
     SDL_DestroyWindow(window_);
     SDL_Quit();
-
     return 0;
 
 }
