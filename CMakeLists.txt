@@ -45,11 +45,6 @@ add_executable(nes
     src/mappers/mapper3.cpp
 )
 
-target_link_libraries(nes PRIVATE
-    SDL2::SDL2
-    nfd
-)
-
 target_include_directories(nes PRIVATE
     include
     ${IMGUI_DIR}
@@ -79,12 +74,9 @@ target_include_directories(imgui PUBLIC
     ${SDL2_SOURCE_DIR}/include
 )
 
-target_link_libraries(imgui PUBLIC
-    SDL2::SDL2
-)
-
 target_link_libraries(nes PRIVATE
     SDL2::SDL2
+    nfd
     imgui
 )
 
